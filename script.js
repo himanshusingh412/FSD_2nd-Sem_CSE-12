@@ -41,7 +41,7 @@ console.log(a--); //11
 console.log(a); //10 */
  
 //Assignment operators
-let a=10;
+/* let a=10;
 a+=5; // a=a+5
 console.log(a); //15
 a-=3; // a=a-3
@@ -51,4 +51,6 @@ console.log(a); //24
 a/=4; // a=a/4
 console.log(a); //6
 a%=3; // a=a%3
-console.log(a); //0 
+console.log(a); //0  */
+
+let
