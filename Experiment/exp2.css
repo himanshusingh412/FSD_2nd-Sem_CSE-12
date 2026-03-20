@@ -3,6 +3,7 @@ body {
     background-color: #eef2f3;
     text-align: center;
 }
+
 .container {
     width: 650px;
     margin: 40px auto;
@@ -11,10 +12,13 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 10px gray;
 }
+
 input {
     padding: 8px;
     margin: 5px;
 }
+
+/* Button Styling */
 button {
     padding: 8px 12px;
     margin: 5px;
@@ -24,9 +28,24 @@ button {
     border-radius: 5px;
     cursor: pointer;
 }
+
 button:hover {
     background-color: #1e7e34;
 }
+
+/* New Layout */
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+    margin: 5px;
+}
+
 #output {
     margin-top: 20px;
     text-align: left;
