@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CivicAI — Citizen Helpline & Complaint Management</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap');
+
+        :root {
+            --navy: #1A2B5E;
+            --navy-light: #1E3466;
+            --navy-dark: #0F1E40;
+            --saffron: #FF6B00;
+            --saffron-light: #FF8C38;
+            --teal: #0D7A7A;
+            --teal-light: #0EA5A5;
+            --white: #ffffff;
+            --off-white: #F4F6FB;
+            --muted: #A8BFDC;
+            --text-dark: #1A2B5E;
+            --text-mid: #4A5A7A;
+            --card-border: #D0D9EE;
+            --success: #16A34A;
+            --warning: #D97706;
+            --danger: #DC2626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--off-white);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* ── TOP NAV ── */
+        .topbar {
+            background: var(--navy);
+            color: white;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--saffron);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .topbar-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: -0.3px;
+        }
+
+        .topbar-name span {
+            color: var(--saffron);
+        }
+
+        .topbar-tagline {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: -2px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-pill:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .lang-pill.active {
+            background: var(--saffron);
+            border-color: var(--saffron);
+        }
+
+        /* ── ORANGE ACCENT BAR ── */
+        .accent-bar {
+            height: 4px;
+            background: linear-gradient(90deg, var(--saffron) 0%, var(--saffron-light) 100%);
+        }
+
+        /* ── MAIN LAYOUT ── */
+        .main {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 0;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* ── LEFT SIDEBAR ── */
+        .sidebar-left {
+            background: var(--navy-dark);
+            padding: 20px 16px;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-section-title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            padding: 0 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--saffron);
+            color: white;
+        }
+
+        .nav-item .icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.07);
+            margin: 16px 0;
+        }
+
+        /* Status card in sidebar */
+        .status-card {
+            background: var(--navy-light);
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .status-card-title {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .status-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .badge-green {
+            background: rgba(22, 163, 74, 0.2);
+            color: #4ADE80;
+        }
+
+        .badge-orange {
+            background: rgba(255, 107, 0, 0.2);
+            color: var(--saffron-light);
+        }
+
+        .badge-blue {
+            background: rgba(13, 122, 122, 0.2);
+            color: #2DD4BF;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .content-area {
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* ── CHAT INTERFACE ── */
+        .chat-wrapper {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(26, 43, 94, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 130px);
+        }
+
+        .chat-header {
+            background: var(--navy);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--saffron);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-name {
+            font-weight: 700;
+            color: white;
+            font-size: 15px;
+        }
+
+        .chat-header-sub {
+            font-size: 11px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .online-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4ADE80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.4
+            }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--off-white);
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 4px;
+        }
+
+        .msg {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+            animation: msgIn 0.3s ease;
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .msg.bot {
+            align-self: flex-start;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .msg-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .msg.bot .msg-avatar {
+            background: var(--navy);
+        }
+
+        .msg.user .msg-avatar {
+            background: var(--saffron);
+        }
+
+        .msg-bubble {
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            max-width: 100%;
+        }
+
+        .msg.bot .msg-bubble {
+            background: white;
+            color: var(--text-dark);
+            border-radius: 4px 14px 14px 14px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .msg.user .msg-bubble {
+            background: var(--navy);
+            color: white;
+            border-radius: 14px 4px 14px 14px;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: var(--text-mid);
+            margin-top: 4px;
+            opacity: 0.6;
+        }
+
+        .msg.user .msg-time {
+            text-align: right;
+        }
+
+        /* Quick reply chips */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quick-chip {
+            background: white;
+            border: 1.5px solid var(--saffron);
+            color: var(--saffron);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-chip:hover {
+            background: var(--saffron);
+            color: white;
+        }
+
+        /* Complaint card inside chat */
+        .complaint-card-chat {
+            background: var(--off-white);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 8px;
+            font-size: 12.5px;
+        }
+
+        .complaint-card-chat .cc-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .cc-label {
+            color: var(--text-mid);
+        }
+
+        .cc-val {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 10px 14px;
+            background: white;
+            border-radius: 4px 14px 14px 14px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            width: fit-content;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--muted);
+            animation: typing 1.2s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0)
+            }
+
+            30% {
+                transform: translateY(-6px)
+            }
+        }
+
+        /* Chat input */
+        .chat-input-bar {
+            padding: 14px 16px;
+            background: white;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1.5px solid var(--card-border);
+            border-radius: 24px;
+            padding: 10px 18px;
+            font-size: 13.5px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.2s;
+            background: var(--off-white);
+            color: var(--text-dark);
+        }
+
+        .chat-input:focus {
+            border-color: var(--navy);
+            background: white;
+        }
+
+        .chat-input::placeholder {
+            color: var(--muted);
+        }
+
+        .send-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--navy);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: var(--saffron);
+            transform: scale(1.05);
+        }
+
+        .mic-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--off-white);
+            border: 1.5px solid var(--card-border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .mic-btn:hover {
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+
+        /* ── RIGHT SIDEBAR ── */
+        .sidebar-right {
+            background: white;
+            padding: 20px 16px;
+            border-left: 1px solid var(--card-border);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--off-white);
+        }
+
+        /* Complaint tracker cards */
+        .complaint-item {
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .complaint-item:hover {
+            box-shadow: 0 2px 12px rgba(26, 43, 94, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .complaint-item.status-pending {
+            border-left-color: var(--warning);
+        }
+
+        .complaint-item.status-progress {
+            border-left-color: var(--teal);
+        }
+
+        .complaint-item.status-resolved {
+            border-left-color: var(--success);
+        }
+
+        .ci-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .ci-id {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--navy);
+            font-family: monospace;
+        }
+
+        .ci-status {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .st-pending {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--warning);
+        }
+
+        .st-progress {
+            background: rgba(13, 122, 122, 0.1);
+            color: var(--teal);
+        }
+
+        .st-resolved {
+            background: rgba(22, 163, 74, 0.1);
+            color: var(--success);
+        }
+
+        .ci-type {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .ci-desc {
+            font-size: 11.5px;
+            color: var(--text-mid);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .ci-meta {
+            font-size: 10.5px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        /* Progress bar */
+        .progress-wrap {
+            margin-top: 6px;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: var(--off-white);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .fill-pending {
+            background: var(--warning);
+            width: 20%;
+        }
+
+        .fill-progress {
+            background: var(--teal);
+            width: 60%;
+        }
+
+        .fill-resolved {
+            background: var(--success);
+            width: 100%;
+        }
+
+        /* Dept stats */
+        .dept-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .dept-card {
+            background: var(--off-white);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .dept-emoji {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .dept-count {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--navy);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .dept-name {
+            font-size: 10px;
+            color: var(--text-mid);
+        }
+
+        /* ── TABS ── */
+        .view-tabs {
+            display: flex;
+            gap: 0;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            box-shadow: 0 1px 6px rgba(26, 43, 94, 0.08);
+            margin-bottom: 16px;
+            border: 1px solid var(--card-border);
+        }
+
+        .view-tab {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 12.5px;
+            font-weight: 500;
+            border-radius: 7px;
+            cursor: pointer;
+            color: var(--text-mid);
+            transition: all 0.2s;
+        }
+
+        .view-tab.active {
+            background: var(--navy);
+            color: white;
+        }
+
+        /* ── DASHBOARD VIEW ── */
+        .dashboard-view {
+            display: none;
+        }
+
+        .dashboard-view.active {
+            display: block;
+        }
+
+        .chat-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-view.hidden {
+            display: none;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(26, 43, 94, 0.06);
+            border: 1px solid var(--card-border);
+        }
+
+        .stat-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .stat-num.orange {
+            color: var(--saffron);
+        }
+
+        .stat-num.teal {
+            color: var(--teal);
+        }
+
+        .stat-label {
+            font-size: 11.5px;
+            color: var(--text-mid);
+            margin-top: 4px;
+        }
+
+        .table-wrap {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(26, 43, 94, 0.06);
+            border: 1px solid var(--card-border);
+        }
+
+        .table-head {
+            background: var(--navy);
+            color: white;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        th {
+            background: var(--off-white);
+            padding: 10px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-mid);
+            font-size: 11px;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--off-white);
+            color: var(--text-dark);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--off-white);
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-pending {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-progress {
+            background: rgba(13, 122, 122, 0.1);
+            color: var(--teal);
+        }
+
+        .badge-resolved {
+            background: rgba(22, 163, 74, 0.1);
+            color: var(--success);
+        }
+
+        /* Priority indicator */
+        .priority-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .p-high {
+            background: var(--danger);
+        }
+
+        .p-med {
+            background: var(--warning);
+        }
+
+        .p-low {
+            background: var(--success);
+        }
+
+        /* ── MODAL for complaint detail ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 30, 64, 0.6);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 480px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .modal-header {
+            background: var(--navy);
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-field {
+            margin-bottom: 14px;
+        }
+
+        .modal-field label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-mid);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .modal-field .val {
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .tl-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .tl-dot.done {
+            background: rgba(22, 163, 74, 0.1);
+            color: var(--success);
+        }
+
+        .tl-dot.active {
+            background: rgba(13, 122, 122, 0.15);
+            color: var(--teal);
+        }
+
+        .tl-dot.pending {
+            background: var(--off-white);
+            color: var(--muted);
+        }
+
+        .tl-content {
+            flex: 1;
+            padding-top: 4px;
+        }
+
+        .tl-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .tl-time {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* ── RESPONSIVE TAG ── */
+        .nsut-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 4px 12px 4px 8px;
+            font-size: 11.5px;
+            color: white;
+        }
+
+        .nsut-dot {
+            width: 18px;
+            height: 18px;
+            background: var(--saffron);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        /* ── HINDI MODE ── */
+        .hindi-text {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOP NAV -->
+    <nav class="topbar">
+        <div class="topbar-brand">
+            <div class="topbar-logo">🏛️</div>
+            <div>
+                <div class="topbar-name">Civic<span>AI</span></div>
+                <div class="topbar-tagline">Citizen Helpline & Complaint Management</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="nsut-badge">
+                <div class="nsut-dot">🎓</div>
+                Hack: The Mind · NSUT
+            </div>
+            <div style="display:flex;gap:4px;margin-left:12px">
+                <div class="lang-pill active" onclick="setLang('en',this)">EN</div>
+                <div class="lang-pill" onclick="setLang('hi',this)">हि</div>
+                <div class="lang-pill" onclick="setLang('ta',this)">த</div>
+            </div>
+        </div>
+    </nav>
+    <div class="accent-bar"></div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="main">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar-left">
+            <div class="sidebar-section-title">Navigation</div>
+            <div class="nav-item active" onclick="switchTab('chat',this)">
+                <span class="icon">💬</span> AI Helpline Chat
+            </div>
+            <div class="nav-item" onclick="switchTab('dashboard',this)">
+                <span class="icon">📊</span> Officer Dashboard
+            </div>
+            <div class="nav-item" onclick="switchTab('track',this)">
+                <span class="icon">🔍</span> Track Complaint
+            </div>
+
+            <div class="nav-divider"></div>
+            <div class="sidebar-section-title">Departments</div>
+            <div class="nav-item" style="font-size:13px;">
+                <span class="icon">💧</span> Water Supply
+            </div>
+            <div class="nav-item" style="font-size:13px;">
+                <span class="icon">🛣️</span> Roads & Transport
+            </div>
+            <div class="nav-item" style="font-size:13px;">
+                <span class="icon">⚡</span> Electricity
+            </div>
+            <div class="nav-item" style="font-size:13px;">
+                <span class="icon">🏥</span> Healthcare
+            </div>
+            <div class="nav-item" style="font-size:13px;">
+                <span class="icon">🗑️</span> Sanitation
+            </div>
+
+            <!-- System status -->
+            <div class="status-card">
+                <div class="status-card-title">System Status</div>
+                <div class="status-row">
+                    <div class="status-label">AI Bot</div>
+                    <div class="status-badge badge-green">● Online</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-label">WhatsApp</div>
+                    <div class="status-badge badge-green">● Active</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-label">IVR Line</div>
+                    <div class="status-badge badge-green">● Live</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-label">Open Complaints</div>
+                    <div class="status-badge badge-orange">38</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="content-area" id="mainArea">
+
+            <!-- VIEW TABS -->
+            <div class="view-tabs">
+                <div class="view-tab active" id="tabChat" onclick="showView('chat')">💬 AI Chat</div>
+                <div class="view-tab" id="tabDash" onclick="showView('dashboard')">📊 Dashboard</div>
+                <div class="view-tab" id="tabTrack" onclick="showView('track')">🔍 Track</div>
+            </div>
+
+            <!-- CHAT VIEW -->
+            <div class="chat-view" id="viewChat">
+                <div class="chat-wrapper">
+                    <div class="chat-header">
+                        <div class="chat-avatar">🤖</div>
+                        <div class="chat-header-info">
+                            <div class="chat-header-name">CivicAI Assistant</div>
+                            <div class="chat-header-sub">
+                                <div class="online-dot"></div>
+                                Active · Responds in 5+ languages · 24/7
+                            </div>
+                        </div>
+                        <div style="font-size:20px;cursor:pointer;" title="Voice call">📞</div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be added here -->
+                    </div>
+
+                    <div class="chat-input-bar">
+                        <div class="mic-btn" title="Voice input">🎤</div>
+                        <input class="chat-input" id="chatInput" placeholder="Type your complaint or question..."
+                            onkeydown="handleKey(event)" />
+                        <button class="send-btn" onclick="sendMessage()">➤</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD VIEW -->
+            <div class="dashboard-view" id="viewDashboard">
+                <div class="stat-row">
+                    <div class="stat-card">
+                        <div class="stat-num">247</div>
+                        <div class="stat-label">Total Complaints (This Month)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num orange">38</div>
+                        <div class="stat-label">Pending Resolution</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num teal">1.8d</div>
+                        <div class="stat-label">Avg. Resolution Time</div>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <div class="table-head">
+                        <span>📋 Live Complaint Feed</span>
+                        <span style="font-size:11px;opacity:0.7">Auto-refreshed · 38 open</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Assigned To</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM')">
+                                <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-001</code></td>
+                                <td>💧 Water Supply</td>
+                                <td>No water for 3 days — Block C, Dwarka</td>
+                                <td><span class="priority-dot p-high"></span>High</td>
+                                <td><span class="badge badge-progress">In Progress</span></td>
+                                <td>Ramesh Kumar</td>
+                                <td><button
+                                        onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM');event.stopPropagation()"
+                                        style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button>
+                                </td>
+                            </tr>
+                            <tr
+                                onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road causing accidents','High','Pending','Unassigned','Apr 2 · 11:30 AM')">
+                                <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-002</code></td>
+                                <td>🛣️ Roads</td>
+                                <td>Large pothole on MG Road near signal</td>
+                                <td><span class="priority-dot p-high"></span>High</td>
+                                <td><span class="badge badge-pending">Pending</span></td>
+                                <td>Unassigned</td>
+                                <td><button
+                                        onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road causing accidents','High','Pending','Unassigned','Apr 2 · 11:30 AM');event.stopPropagation()"
+                                        style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button>
+                                </td>
+                            </tr>
+                            <tr
+                                onclick="openModal('CIV-20260403-003','Electricity','Street lights not working for 5 nights','Medium','In Progress','Suresh Yadav, BSES','Apr 2 · 2:00 PM')">
+                                <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-003</code></td>
+                                <td>⚡ Electricity</td>
+                                <td>Street lights off for 5 days, Rohini</td>
+                                <td><span class="priority-dot p-med"></span>Medium</td>
+                                <td><span class="badge badge-progress">In Progress</span></td>
+                                <td>Suresh Yadav</td>
+                                <td><button
+                                        onclick="openModal('CIV-20260403-003','Electricity','Street lights not working for 5 nights','Medium','In Progress','Suresh Yadav, BSES','Apr 2 · 2:00 PM');event.stopPropagation()"
+                                        style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button>
+                                </td>
+                            </tr>
+                            <tr
+                                onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM')">
+                                <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-004</code></td>
+                                <td>🗑️ Sanitation</td>
+                                <td>Garbage not collected — Lajpat Nagar</td>
+                                <td><span class="priority-dot p-med"></span>Medium</td>
+                                <td><span class="badge badge-resolved">Resolved</span></td>
+                                <td>Mohan, MCD</td>
+                                <td><button
+                                        onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM');event.stopPropagation()"
+                                        style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button>
+                                </td>
+                            </tr>
+                            <tr
+                                onclick="openModal('CIV-20260403-005','Healthcare','Clinic closed mid-day, no doctor available','Low','Pending','Unassigned','Apr 3 · 10:15 AM')">
+                                <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-005</code></td>
+                                <td>🏥 Healthcare</td>
+                                <td>Govt. clinic closed, no notice</td>
+                                <td><span class="priority-dot p-low"></span>Low</td>
+                                <td><span class="badge badge-pending">Pending</span></td>
+                                <td>Unassigned</td>
+                                <td><button
+                                        onclick="openModal('CIV-20260403-005','Healthcare','Clinic closed mid-day, no doctor available','Low','Pending','Unassigned','Apr 3 · 10:15 AM');event.stopPropagation()"
+                                        style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TRACK VIEW -->
+            <div class="dashboard-view" id="viewTrack">
+                <div
+                    style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(26,43,94,0.08);border:1px solid var(--card-border);">
+                    <h3 style="font-family:'Space Grotesk',sans-serif;color:var(--navy);margin-bottom:6px;">🔍 Track
+                        Your Complaint</h3>
+                    <p style="font-size:13px;color:var(--text-mid);margin-bottom:18px;">Enter your Complaint ID to check
+                        live status.</p>
+                    <div style="display:flex;gap:10px;margin-bottom:24px;">
+                        <input id="trackInput" placeholder="e.g. CIV-20260403-001"
+                            style="flex:1;border:1.5px solid var(--card-border);border-radius:10px;padding:10px 16px;font-size:14px;font-family:inherit;outline:none;color:var(--text-dark);"
+                            onfocus="this.style.borderColor='var(--navy)'"
+                            onblur="this.style.borderColor='var(--card-border)'" />
+                        <button onclick="trackComplaint()"
+                            style="background:var(--navy);color:white;border:none;border-radius:10px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Track
+                            →</button>
+                    </div>
+                    <div id="trackResult" style="display:none;">
+                        <div
+                            style="background:var(--off-white);border-radius:12px;padding:20px;border:1px solid var(--card-border);">
+                            <div
+                                style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+                                <div>
+                                    <div
+                                        style="font-size:11px;color:var(--text-mid);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">
+                                        Complaint ID</div>
+                                    <div style="font-family:monospace;font-size:16px;font-weight:700;color:var(--navy);margin-top:2px;"
+                                        id="tr-id"></div>
+                                </div>
+                                <span class="badge badge-progress" id="tr-status"></span>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                                <div>
+                                    <div
+                                        style="font-size:11px;color:var(--text-mid);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
+                                        Category</div>
+                                    <div style="font-size:14px;color:var(--text-dark);margin-top:3px;" id="tr-cat">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div
+                                        style="font-size:11px;color:var(--text-mid);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
+                                        Assigned To</div>
+                                    <div style="font-size:14px;color:var(--text-dark);margin-top:3px;" id="tr-assign">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div
+                                    style="font-size:11px;color:var(--text-mid);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+                                    Progress Timeline</div>
+                                <div class="timeline-item">
+                                    <div class="tl-dot done">✓</div>
+                                    <div class="tl-content">
+                                        <div class="tl-label">Complaint Registered</div>
+                                        <div class="tl-time" id="tr-t1"></div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="tl-dot done">✓</div>
+                                    <div class="tl-content">
+                                        <div class="tl-label">Auto-routed to Department</div>
+                                        <div class="tl-time">2 minutes after registration</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item" id="tl-3">
+                                    <div class="tl-dot active">⏳</div>
+                                    <div class="tl-content">
+                                        <div class="tl-label">Officer Assigned & Working</div>
+                                        <div class="tl-time" id="tr-t3">In progress</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item" id="tl-4">
+                                    <div class="tl-dot pending">○</div>
+                                    <div class="tl-content">
+                                        <div class="tl-label">Resolution Confirmed</div>
+                                        <div class="tl-time">Estimated: within 3 days</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- RIGHT SIDEBAR -->
+        <aside class="sidebar-right">
+            <div class="section-title">📋 Recent Complaints</div>
+
+            <div class="complaint-item status-progress"
+                onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM')">
+                <div class="ci-top">
+                    <span class="ci-id">CIV-001</span>
+                    <span class="ci-status st-progress">In Progress</span>
+                </div>
+                <div class="ci-type">💧 Water Supply</div>
+                <div class="ci-desc">No water for 3 days — Block C, Dwarka</div>
+                <div class="progress-wrap">
+                    <div class="progress-bar">
+                        <div class="progress-fill fill-progress"></div>
+                    </div>
+                </div>
+                <div class="ci-meta">Apr 1, 9:12 AM · Ramesh Kumar</div>
+            </div>
+
+            <div class="complaint-item status-pending"
+                onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road causing accidents','High','Pending','Unassigned','Apr 2 · 11:30 AM')">
+                <div class="ci-top">
+                    <span class="ci-id">CIV-002</span>
+                    <span class="ci-status st-pending">Pending</span>
+                </div>
+                <div class="ci-type">🛣️ Roads & Transport</div>
+                <div class="ci-desc">Large pothole near MG Road signal</div>
+                <div class="progress-wrap">
+                    <div class="progress-bar">
+                        <div class="progress-fill fill-pending"></div>
+                    </div>
+                </div>
+                <div class="ci-meta">Apr 2, 11:30 AM · Unassigned</div>
+            </div>
+
+            <div class="complaint-item status-resolved"
+                onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM')">
+                <div class="ci-top">
+                    <span class="ci-id">CIV-004</span>
+                    <span class="ci-status st-resolved">Resolved ✓</span>
+                </div>
+                <div class="ci-type">🗑️ Sanitation</div>
+                <div class="ci-desc">Garbage pickup resumed, Lajpat Nagar</div>
+                <div class="progress-wrap">
+                    <div class="progress-bar">
+                        <div class="progress-fill fill-resolved"></div>
+                    </div>
+                </div>
+                <div class="ci-meta">Resolved Apr 3, 7:00 AM</div>
+            </div>
+
+            <div class="nav-divider" style="border-color:var(--card-border);"></div>
+            <div class="section-title">🏛️ Dept. Load</div>
+            <div class="dept-grid">
+                <div class="dept-card">
+                    <div class="dept-emoji">💧</div>
+                    <div class="dept-count">14</div>
+                    <div class="dept-name">Water</div>
+                </div>
+                <div class="dept-card">
+                    <div class="dept-emoji">🛣️</div>
+                    <div class="dept-count">9</div>
+                    <div class="dept-name">Roads</div>
+                </div>
+                <div class="dept-card">
+                    <div class="dept-emoji">⚡</div>
+                    <div class="dept-count">7</div>
+                    <div class="dept-name">Electricity</div>
+                </div>
+                <div class="dept-card">
+                    <div class="dept-emoji">🗑️</div>
+                    <div class="dept-count">5</div>
+                    <div class="dept-name">Sanitation</div>
+                </div>
+            </div>
+
+            <div
+                style="background:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);border-radius:10px;padding:14px;color:white;font-size:12px;line-height:1.6;">
+                <div style="font-weight:700;font-size:13px;margin-bottom:6px;">📞 WhatsApp Helpline</div>
+                <div style="opacity:0.85;">Send "HELP" to</div>
+                <div
+                    style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--saffron-light);">
+                    +91 80000 CIVIC</div>
+                <div style="opacity:0.7;margin-top:4px;font-size:11px;">Also available via IVR voice call</div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- COMPLAINT DETAIL MODAL -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="m-id"></div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="m-time"></div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+                    <div class="modal-field">
+                        <label>Category</label>
+                        <div class="val" id="m-cat"></div>
+                    </div>
+                    <div class="modal-field">
+                        <label>Priority</label>
+                        <div class="val" id="m-priority"></div>
+                    </div>
+                    <div class="modal-field">
+                        <label>Status</label>
+                        <div class="val" id="m-status"></div>
+                    </div>
+                    <div class="modal-field">
+                        <label>Assigned To</label>
+                        <div class="val" id="m-assign"></div>
+                    </div>
+                </div>
+                <div class="modal-field">
+                    <label>Description</label>
+                    <div class="val" id="m-desc"
+                        style="background:var(--off-white);padding:10px;border-radius:8px;font-size:13px;line-height:1.5;">
+                    </div>
+                </div>
+                <div style="margin-top:16px;">
+                    <label
+                        style="font-size:11px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:10px;">Resolution
+                        Timeline</label>
+                    <div class="timeline-item">
+                        <div class="tl-dot done">✓</div>
+                        <div class="tl-content">
+                            <div class="tl-label">Registered via CivicAI Bot</div>
+                            <div class="tl-time" id="m-t1"></div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="tl-dot done">✓</div>
+                        <div class="tl-content">
+                            <div class="tl-label">AI Auto-classified & Routed</div>
+                            <div class="tl-time">Instantly — 2 minutes after submission</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="m-tl3">
+                        <div class="tl-dot active">⏳</div>
+                        <div class="tl-content">
+                            <div class="tl-label">Officer Assigned & Working</div>
+                            <div class="tl-time">In progress — SLA: 3 days</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="tl-dot pending">○</div>
+                        <div class="tl-content">
+                            <div class="tl-label">Citizen Confirmation</div>
+                            <div class="tl-time">Awaiting resolution</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── LANGUAGE CONFIG ──
+        const GREETINGS = {
+            en: [
+                { role: 'bot', text: '🙏 Namaste! I am CivicAI, your 24/7 government helpline assistant. How can I help you today?', chips: ['Register a complaint', 'Check complaint status', 'Talk to an officer', 'Emergency'] },
+            ],
+            hi: [
+                { role: 'bot', text: '🙏 नमस्ते! मैं CivicAI हूँ, आपकी 24/7 सरकारी हेल्पलाइन। मैं आपकी कैसे सहायता कर सकता हूँ?', chips: ['शिकायत दर्ज करें', 'शिकायत की स्थिति जाँचें', 'अधिकारी से बात करें'] },
+            ],
+            ta: [
+                { role: 'bot', text: '🙏 வணக்கம்! நான் CivicAI, உங்கள் 24/7 அரசு உதவி மையம். நான் உங்களுக்கு எவ்வாறு உதவலாம்?', chips: ['புகார் பதிவு செய்யவும்', 'நிலையை சரிபார்க்கவும்'] },
+            ]
+        };
+
+        const BOT_FLOWS = {
+            'register a complaint': [
+                { delay: 800, text: 'Sure! What category does your complaint fall under?', chips: ['💧 Water Supply', '🛣️ Roads & Transport', '⚡ Electricity', '🏥 Healthcare', '🗑️ Sanitation', '📶 Other'] },
+            ],
+            '💧 water supply': [
+                { delay: 700, text: 'Got it — Water Supply complaint. Please briefly describe the issue:' },
+            ],
+            '🛣️ roads & transport': [
+                { delay: 700, text: 'Roads & Transport — noted. What is the specific issue?' },
+            ],
+            '⚡ electricity': [
+                { delay: 700, text: 'Electricity issue noted. Please describe the problem and your area:' },
+            ],
+            'check complaint status': [
+                { delay: 600, text: 'Please share your Complaint ID (format: CIV-YYYYMMDD-XXX).\n\nDon\'t have it? I can look it up by your phone number 📱' },
+            ],
+            'talk to an officer': [
+                { delay: 500, text: 'Connecting you to the nearest available officer... 🔄', next: { delay: 1500, text: 'An officer from the Municipal Corporation will call you within 15 minutes on your registered number. Reference: #CALL-2026-8821' } }
+            ],
+            'emergency': [
+                { delay: 300, text: '🚨 For emergencies:\n• Police: 100\n• Fire: 101\n• Ambulance: 102\n• Disaster: 108\n\nFor civic emergencies (flooding, power outage), your complaint is being marked HIGH PRIORITY.', chips: ['Register urgent complaint', 'Call emergency services'] }
+            ]
+        };
+
+        let currentLang = 'en';
+        let waitingForComplaint = false;
+        let complaintCategory = '';
+        let complaintCount = 6;
+
+        function setLang(lang, el) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            clearChat();
+            startChat();
+        }
+
+        function clearChat() {
+            document.getElementById('chatMessages').innerHTML = '';
+        }
+
+        function startChat() {
+            const greet = GREETINGS[currentLang][0];
+            setTimeout(() => addBotMessage(greet.text, greet.chips), 400);
+        }
+
+        function addBotMessage(text, chips = []) {
+            const msgs = document.getElementById('chatMessages');
+
+            // typing indicator
+            const typing = document.createElement('div');
+            typing.className = 'msg bot';
+            typing.innerHTML = `
+    <div class="msg-avatar">🤖</div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+            msgs.appendChild(typing);
+            msgs.scrollTop = msgs.scrollHeight;
+
+            setTimeout(() => {
+                typing.remove();
+                const div = document.createElement('div');
+                div.className = 'msg bot';
+                div.style.animation = 'msgIn 0.3s ease';
+                const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                div.innerHTML = `
+      <div class="msg-avatar">🤖</div>
+      <div>
+        <div class="msg-bubble" style="white-space:pre-line">${text}</div>
+        ${chips.length ? `<div class="quick-replies">${chips.map(c => `<div class="quick-chip" onclick="handleChip('${c}')">${c}</div>`).join('')}</div>` : ''}
+        <div class="msg-time">${now}</div>
+      </div>`;
+                msgs.appendChild(div);
+                msgs.scrollTop = msgs.scrollHeight;
+            }, 1000);
+        }
+
+        function addUserMessage(text) {
+            const msgs = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'msg user';
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            div.innerHTML = `
+    <div class="msg-avatar">👤</div>
+    <div>
+      <div class="msg-bubble">${text}</div>
+      <div class="msg-time">${now}</div>
+    </div>`;
+            msgs.appendChild(div);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function handleChip(text) {
+            addUserMessage(text);
+            respondTo(text.toLowerCase());
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            addUserMessage(text);
+
+            if (waitingForComplaint) {
+                registerComplaint(text);
+                return;
+            }
+            respondTo(text.toLowerCase());
+        }
+
+        function respondTo(text) {
+            // Check predefined flows
+            for (const key in BOT_FLOWS) {
+                if (text.includes(key)) {
+                    const flow = BOT_FLOWS[key];
+                    flow.forEach((step, i) => {
+                        setTimeout(() => {
+                            if (step.next) {
+                                addBotMessage(step.text, step.chips || []);
+                                setTimeout(() => addBotMessage(step.next.text, step.next.chips || []), step.next.delay);
+                            } else {
+                                if (key === '💧 water supply' || key === '🛣️ roads & transport' || key === '⚡ electricity') {
+                                    complaintCategory = key;
+                                    waitingForComplaint = true;
+                                }
+                                addBotMessage(step.text, step.chips || []);
+                            }
+                        }, i * 200 + step.delay);
+                    });
+                    return;
+                }
+            }
+
+            // Category descriptions
+            if (waitingForComplaint && text.length > 5) {
+                registerComplaint(text);
+                return;
+            }
+
+            // CIV ID lookup
+            if (text.includes('civ-')) {
+                const id = text.toUpperCase();
+                addBotMessage(`🔍 Looking up ${id}...\n\n✅ Found! Status: **In Progress**\n📍 Assigned to: Ramesh Kumar, Water Dept.\n⏱️ Expected resolution: Within 2 days\n\nWould you like to get SMS updates?`, ['Yes, notify me', 'No thanks']);
+                return;
+            }
+
+            // Default responses
+            const defaults = [
+                'I understand. Could you please provide more details so I can help you better? 😊',
+                'Let me help you with that! Can you tell me which area of Delhi this concerns?',
+                'Got it! For fastest service, please tell me:\n1. Your area/ward\n2. The specific issue\n3. Since when has this been happening'
+            ];
+            addBotMessage(defaults[Math.floor(Math.random() * defaults.length)], ['Register a complaint', 'Check complaint status', 'Emergency']);
+        }
+
+        function registerComplaint(desc) {
+            waitingForComplaint = false;
+            const id = `CIV-20260403-00${complaintCount++}`;
+            const cat = complaintCategory || '📋 General';
+            const dept = cat.includes('water') ? 'Water Supply Department' : cat.includes('road') ? 'Roads & Transport' : 'Municipal Corporation';
+
+            addBotMessage(`✅ **Complaint Registered Successfully!**\n\nYour complaint has been registered and routed to the ${dept}. You will receive a confirmation SMS shortly.\n\nComplaint ID: **${id}**\nEstimated Resolution: 3 working days\n\nYou can track your complaint anytime using this ID 🔍`, ['Track my complaint', 'Register another', 'Go to Dashboard']);
+
+            // Add to right sidebar
+            setTimeout(() => {
+                const sidebar = document.querySelector('.sidebar-right');
+                const first = sidebar.querySelector('.complaint-item');
+                const newCard = document.createElement('div');
+                newCard.className = 'complaint-item status-pending';
+                newCard.innerHTML = `
+      <div class="ci-top">
+        <span class="ci-id">${id.split('-')[2]}</span>
+        <span class="ci-status st-pending">Pending</span>
+      </div>
+      <div class="ci-type">${cat} </div>
+      <div class="ci-desc">${desc.substring(0, 50)}...</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill fill-pending"></div></div>
+      </div>
+      <div class="ci-meta">Just now · Unassigned</div>`;
+                sidebar.insertBefore(newCard, first);
+                newCard.style.animation = 'msgIn 0.4s ease';
+            }, 1500);
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        // ── VIEW SWITCHING ──
+        function showView(view) {
+            document.getElementById('viewChat').style.display = view === 'chat' ? 'flex' : 'none';
+            document.getElementById('viewDashboard').style.display = view === 'dashboard' ? 'block' : 'none';
+            document.getElementById('viewTrack').style.display = view === 'track' ? 'block' : 'none';
+            ['tabChat', 'tabDash', 'tabTrack'].forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById(view === 'chat' ? 'tabChat' : view === 'dashboard' ? 'tabDash' : 'tabTrack').classList.add('active');
+        }
+
+        function switchTab(view, el) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            showView(view === 'track' ? 'track' : view === 'dashboard' ? 'dashboard' : 'chat');
+        }
+
+        // ── MODAL ──
+        function openModal(id, cat, desc, priority, status, assign, time) {
+            document.getElementById('m-id').textContent = id;
+            document.getElementById('m-cat').textContent = cat;
+            document.getElementById('m-desc').textContent = desc;
+            document.getElementById('m-priority').textContent = priority;
+            document.getElementById('m-status').innerHTML = `<span class="badge badge-${status === 'Resolved' ? 'resolved' : status === 'In Progress' ? 'progress' : 'pending'}">${status}</span>`;
+            document.getElementById('m-assign').textContent = assign;
+            document.getElementById('m-time').textContent = 'Filed: ' + time;
+            document.getElementById('m-t1').textContent = time;
+            if (status === 'Resolved') {
+                document.getElementById('m-tl3').querySelector('.tl-dot').className = 'tl-dot done';
+                document.getElementById('m-tl3').querySelector('.tl-dot').textContent = '✓';
+            }
+            document.getElementById('modalOverlay').classList.add('open');
+        }
+
+        function closeModal(e) {
+            if (!e || e.target === document.getElementById('modalOverlay')) {
+                document.getElementById('modalOverlay').classList.remove('open');
+            }
+        }
+
+        // ── TRACK COMPLAINT ──
+        const COMPLAINT_DB = {
+            'CIV-20260403-001': { cat: '💧 Water Supply', assign: 'Ramesh Kumar, Water Dept.', status: 'In Progress', time: 'Apr 1, 2026 · 9:12 AM' },
+            'CIV-20260403-002': { cat: '🛣️ Roads & Transport', assign: 'Unassigned', status: 'Pending', time: 'Apr 2, 2026 · 11:30 AM' },
+            'CIV-20260403-003': { cat: '⚡ Electricity', assign: 'Suresh Yadav, BSES', status: 'In Progress', time: 'Apr 2, 2026 · 2:00 PM' },
+            'CIV-20260403-004': { cat: '🗑️ Sanitation', assign: 'Mohan, MCD', status: 'Resolved', time: 'Mar 31, 2026 · 8:00 AM' },
+        };
+
+        function trackComplaint() {
+            const id = document.getElementById('trackInput').value.trim().toUpperCase();
+            const result = document.getElementById('trackResult');
+            const data = COMPLAINT_DB[id];
+
+            if (data) {
+                document.getElementById('tr-id').textContent = id;
+                document.getElementById('tr-cat').textContent = data.cat;
+                document.getElementById('tr-assign').textContent = data.assign;
+                document.getElementById('tr-status').textContent = data.status;
+                document.getElementById('tr-status').className = 'badge badge-' + (data.status === 'Resolved' ? 'resolved' : data.status === 'In Progress' ? 'progress' : 'pending');
+                document.getElementById('tr-t1').textContent = data.time;
+                result.style.display = 'block';
+                result.style.animation = 'msgIn 0.4s ease';
+            } else {
+                alert('Complaint ID not found. Please check and try again.\n\nTry: CIV-20260403-001');
+            }
+        }
+
+        // ── INIT ──
+        startChat();
+    </script>
+</body>
+
+</html>

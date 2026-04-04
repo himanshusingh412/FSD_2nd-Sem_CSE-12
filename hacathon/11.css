@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f4f6fb;
+}
+
+/* Topbar */
+.topbar {
+    background: #1A2B5E;
+    color: white;
+    padding: 10px;
+}
+
+/* Layout */
+.main {
+    display: flex;
+}
+
+.sidebar {
+    width: 200px;
+    background: #0F1E40;
+    padding: 10px;
+}
+
+.sidebar button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #FF6B00;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* Views */
+.view {
+    display: none;
+    padding: 20px;
+}
+
+.view.active {
+    display: block;
+}
+
+/* Chat */
+.chat-box {
+    height: 300px;
+    overflow-y: auto;
+    background: white;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.msg {
+    margin: 5px 0;
+}
+
+.user {
+    text-align: right;
+    color: blue;
+}
+
+.bot {
+    text-align: left;
+    color: black;
+}
+
+/* Input */
+.input-bar {
+    display: flex;
+}
+
+.input-bar input {
+    flex: 1;
+    padding: 10px;
+}
+
+.input-bar button {
+    padding: 10px;
+}

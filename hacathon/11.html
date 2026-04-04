@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CivicAI</title>
+    <link rel="stylesheet" href="11.css">
+</head>
+
+<body>
+
+    <nav class="topbar">
+        <h2>CivicAI</h2>
+    </nav>
+
+    <div class="main">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <button onclick="showView('chat')">Chat</button>
+            <button onclick="showView('dashboard')">Dashboard</button>
+            <button onclick="showView('track')">Track</button>
+        </aside>
+
+        <!-- Content -->
+        <main>
+            <!-- Chat -->
+            <div id="chatView" class="view active">
+                <div id="chatMessages" class="chat-box"></div>
+
+                <div class="input-bar">
+                    <input id="chatInput" placeholder="Type..." />
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboardView" class="view">
+                <h3>Dashboard</h3>
+                <p>Total complaints: 247</p>
+            </div>
+
+            <!-- Track -->
+            <div id="trackView" class="view">
+                <h3>Track Complaint</h3>
+                <input id="trackInput" placeholder="Enter ID">
+                <button onclick="trackComplaint()">Track</button>
+                <p id="trackResult"></p>
+            </div>
+        </main>
+    </div>
+
+    <script src="11.js"></script>
+</body>
+
+</html>
