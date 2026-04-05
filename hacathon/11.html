@@ -1,55 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>CivicAI</title>
-    <link rel="stylesheet" href="11.css">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CivicAI — Citizen Helpline & Complaint Management</title>
+<link rel="stylesheet" href="11.css"/>
 </head>
-
 <body>
 
-    <nav class="topbar">
-        <h2>CivicAI</h2>
-    </nav>
+<!-- TOP NAV -->
+<nav class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">🏛️</div>
+    <div>
+      <div class="topbar-name">Civic<span>AI</span></div>
+      <div class="topbar-tagline">Citizen Helpline & Complaint Management</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="nsut-badge">
+      <div class="nsut-dot">🎓</div>
+      Hack: The Mind · NSUT
+    </div>
+    <div style="display:flex;gap:4px;margin-left:12px">
+      <div class="lang-pill active" onclick="setLang('en',this)">EN</div>
+      <div class="lang-pill" onclick="setLang('hi',this)">हि</div>
+      <div class="lang-pill" onclick="setLang('ta',this)">த</div>
+    </div>
+  </div>
+</nav>
+<div class="accent-bar"></div>
 
-    <div class="main">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <button onclick="showView('chat')">Chat</button>
-            <button onclick="showView('dashboard')">Dashboard</button>
-            <button onclick="showView('track')">Track</button>
-        </aside>
+<!-- MAIN LAYOUT -->
+<div class="main">
 
-        <!-- Content -->
-        <main>
-            <!-- Chat -->
-            <div id="chatView" class="view active">
-                <div id="chatMessages" class="chat-box"></div>
-
-                <div class="input-bar">
-                    <input id="chatInput" placeholder="Type..." />
-                    <button onclick="sendMessage()">Send</button>
-                </div>
-            </div>
-
-            <!-- Dashboard -->
-            <div id="dashboardView" class="view">
-                <h3>Dashboard</h3>
-                <p>Total complaints: 247</p>
-            </div>
-
-            <!-- Track -->
-            <div id="trackView" class="view">
-                <h3>Track Complaint</h3>
-                <input id="trackInput" placeholder="Enter ID">
-                <button onclick="trackComplaint()">Track</button>
-                <p id="trackResult"></p>
-            </div>
-        </main>
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="sidebar-section-title">Navigation</div>
+    <div class="nav-item active" onclick="switchTab('chat',this)">
+      <span class="icon">💬</span> AI Helpline Chat
+    </div>
+    <div class="nav-item" onclick="switchTab('dashboard',this)">
+      <span class="icon">📊</span> Officer Dashboard
+    </div>
+    <div class="nav-item" onclick="switchTab('track',this)">
+      <span class="icon">🔍</span> Track Complaint
     </div>
 
-    <script src="11.js"></script>
-</body>
+    <div class="nav-divider"></div>
+    <div class="sidebar-section-title">Departments</div>
+    <div class="nav-item" style="font-size:13px;">
+      <span class="icon">💧</span> Water Supply
+    </div>
+    <div class="nav-item" style="font-size:13px;">
+      <span class="icon">🛣️</span> Roads & Transport
+    </div>
+    <div class="nav-item" style="font-size:13px;">
+      <span class="icon">⚡</span> Electricity
+    </div>
+    <div class="nav-item" style="font-size:13px;">
+      <span class="icon">🏥</span> Healthcare
+    </div>
+    <div class="nav-item" style="font-size:13px;">
+      <span class="icon">🗑️</span> Sanitation
+    </div>
 
+    <!-- System status -->
+    <div class="status-card">
+      <div class="status-card-title">System Status</div>
+      <div class="status-row">
+        <div class="status-label">AI Bot</div>
+        <div class="status-badge badge-green">● Online</div>
+      </div>
+      <div class="status-row">
+        <div class="status-label">WhatsApp</div>
+        <div class="status-badge badge-green">● Active</div>
+      </div>
+      <div class="status-row">
+        <div class="status-label">IVR Line</div>
+        <div class="status-badge badge-green">● Live</div>
+      </div>
+      <div class="status-row">
+        <div class="status-label">Open Complaints</div>
+        <div class="status-badge badge-orange">38</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="content-area" id="mainArea">
+
+    <!-- VIEW TABS -->
+    <div class="view-tabs">
+      <div class="view-tab active" id="tabChat" onclick="showView('chat')">💬 AI Chat</div>
+      <div class="view-tab" id="tabDash" onclick="showView('dashboard')">📊 Dashboard</div>
+      <div class="view-tab" id="tabTrack" onclick="showView('track')">🔍 Track</div>
+    </div>
+
+    <!-- CHAT VIEW -->
+    <div class="chat-view" id="viewChat">
+      <div class="chat-wrapper">
+        <div class="chat-header">
+          <div class="chat-avatar">🤖</div>
+          <div class="chat-header-info">
+            <div class="chat-header-name">CivicAI Assistant</div>
+            <div class="chat-header-sub">
+              <div class="online-dot"></div>
+              Active · Responds in 5+ languages · 24/7
+            </div>
+          </div>
+          <div style="font-size:20px;cursor:pointer;" title="Voice call">📞</div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <!-- Messages injected by app.js -->
+        </div>
+
+        <div class="chat-input-bar">
+          <div class="mic-btn" title="Voice input">🎤</div>
+          <input class="chat-input" id="chatInput" placeholder="Type your complaint or question..." onkeydown="handleKey(event)"/>
+          <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div class="dashboard-view" id="viewDashboard">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-num">247</div>
+          <div class="stat-label">Total Complaints (This Month)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num orange">38</div>
+          <div class="stat-label">Pending Resolution</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num teal">1.8d</div>
+          <div class="stat-label">Avg. Resolution Time</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-head">
+          <span>📋 Live Complaint Feed</span>
+          <span style="font-size:11px;opacity:0.7">Auto-refreshed · 38 open</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Assigned To</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM')">
+              <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-001</code></td>
+              <td>💧 Water Supply</td>
+              <td>No water for 3 days — Block C, Dwarka</td>
+              <td><span class="priority-dot p-high"></span>High</td>
+              <td><span class="badge badge-progress">In Progress</span></td>
+              <td>Ramesh Kumar</td>
+              <td><button onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM');event.stopPropagation()" style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button></td>
+            </tr>
+            <tr onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road causing accidents','High','Pending','Unassigned','Apr 2 · 11:30 AM')">
+              <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-002</code></td>
+              <td>🛣️ Roads</td>
+              <td>Large pothole on MG Road near signal</td>
+              <td><span class="priority-dot p-high"></span>High</td>
+              <td><span class="badge badge-pending">Pending</span></td>
+              <td>Unassigned</td>
+              <td><button onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road causing accidents','High','Pending','Unassigned','Apr 2 · 11:30 AM');event.stopPropagation()" style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button></td>
+            </tr>
+            <tr onclick="openModal('CIV-20260403-003','Electricity','Street lights not working for 5 nights','Medium','In Progress','Suresh Yadav, BSES','Apr 2 · 2:00 PM')">
+              <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-003</code></td>
+              <td>⚡ Electricity</td>
+              <td>Street lights off for 5 days, Rohini</td>
+              <td><span class="priority-dot p-med"></span>Medium</td>
+              <td><span class="badge badge-progress">In Progress</span></td>
+              <td>Suresh Yadav</td>
+              <td><button onclick="openModal('CIV-20260403-003','Electricity','Street lights not working for 5 nights','Medium','In Progress','Suresh Yadav, BSES','Apr 2 · 2:00 PM');event.stopPropagation()" style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button></td>
+            </tr>
+            <tr onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM')">
+              <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-004</code></td>
+              <td>🗑️ Sanitation</td>
+              <td>Garbage not collected — Lajpat Nagar</td>
+              <td><span class="priority-dot p-med"></span>Medium</td>
+              <td><span class="badge badge-resolved">Resolved</span></td>
+              <td>Mohan, MCD</td>
+              <td><button onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM');event.stopPropagation()" style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button></td>
+            </tr>
+            <tr onclick="openModal('CIV-20260403-005','Healthcare','Clinic closed mid-day, no doctor available','Low','Pending','Unassigned','Apr 3 · 10:15 AM')">
+              <td><code style="font-size:11px;color:var(--navy);font-weight:700">CIV-005</code></td>
+              <td>🏥 Healthcare</td>
+              <td>Govt. clinic closed, no notice</td>
+              <td><span class="priority-dot p-low"></span>Low</td>
+              <td><span class="badge badge-pending">Pending</span></td>
+              <td>Unassigned</td>
+              <td><button onclick="openModal('CIV-20260403-005','Healthcare','Clinic closed mid-day, no doctor available','Low','Pending','Unassigned','Apr 3 · 10:15 AM');event.stopPropagation()" style="background:var(--navy);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRACK VIEW -->
+    <div class="dashboard-view" id="viewTrack">
+      <div style="background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(26,43,94,0.08);border:1px solid var(--card-border);">
+        <h3 style="font-family:'Space Grotesk',sans-serif;color:var(--navy);margin-bottom:6px;">🔍 Track Your Complaint</h3>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:18px;">Enter your Complaint ID to check live status.</p>
+        <div style="display:flex;gap:10px;margin-bottom:24px;">
+          <input id="trackInput" placeholder="e.g. CIV-20260403-001" style="flex:1;border:1.5px solid var(--card-border);border-radius:10px;padding:10px 16px;font-size:14px;font-family:inherit;outline:none;color:var(--text-dark);" onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='var(--card-border)'"/>
+          <button onclick="trackComplaint()" style="background:var(--navy);color:white;border:none;border-radius:10px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Track →</button>
+        </div>
+        <div id="trackResult" style="display:none;">
+          <div style="background:var(--off-white);border-radius:12px;padding:20px;border:1px solid var(--card-border);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+              <div>
+                <div style="font-size:11px;color:var(--text-mid);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Complaint ID</div>
+                <div style="font-family:monospace;font-size:16px;font-weight:700;color:var(--navy);margin-top:2px;" id="tr-id"></div>
+              </div>
+              <span class="badge badge-progress" id="tr-status"></span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div>
+                <div style="font-size:11px;color:var(--text-mid);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Category</div>
+                <div style="font-size:14px;color:var(--text-dark);margin-top:3px;" id="tr-cat"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--text-mid);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Assigned To</div>
+                <div style="font-size:14px;color:var(--text-dark);margin-top:3px;" id="tr-assign"></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-mid);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Progress Timeline</div>
+              <div class="timeline-item">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-content">
+                  <div class="tl-label">Complaint Registered</div>
+                  <div class="tl-time" id="tr-t1"></div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-content">
+                  <div class="tl-label">Auto-routed to Department</div>
+                  <div class="tl-time">2 minutes after registration</div>
+                </div>
+              </div>
+              <div class="timeline-item" id="tl-3">
+                <div class="tl-dot active">⏳</div>
+                <div class="tl-content">
+                  <div class="tl-label">Officer Assigned & Working</div>
+                  <div class="tl-time" id="tr-t3">In progress</div>
+                </div>
+              </div>
+              <div class="timeline-item" id="tl-4">
+                <div class="tl-dot pending">○</div>
+                <div class="tl-content">
+                  <div class="tl-label">Resolution Confirmed</div>
+                  <div class="tl-time">Estimated: within 3 days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar-right">
+    <div class="section-title">📋 Recent Complaints</div>
+
+    <div class="complaint-item status-progress" onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM')">
+      <div class="ci-top">
+        <span class="ci-id">CIV-001</span>
+        <span class="ci-status st-progress">In Progress</span>
+      </div>
+      <div class="ci-type">💧 Water Supply</div>
+      <div class="ci-desc">No water for 3 days — Block C, Dwarka</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill fill-progress"></div></div>
+      </div>
+      <div class="ci-meta">Apr 1, 9:12 AM · Ramesh Kumar</div>
+    </div>
+
+    <div class="complaint-item status-pending" onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road causing accidents','High','Pending','Unassigned','Apr 2 · 11:30 AM')">
+      <div class="ci-top">
+        <span class="ci-id">CIV-002</span>
+        <span class="ci-status st-pending">Pending</span>
+      </div>
+      <div class="ci-type">🛣️ Roads & Transport</div>
+      <div class="ci-desc">Large pothole near MG Road signal</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill fill-pending"></div></div>
+      </div>
+      <div class="ci-meta">Apr 2, 11:30 AM · Unassigned</div>
+    </div>
+
+    <div class="complaint-item status-resolved" onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM')">
+      <div class="ci-top">
+        <span class="ci-id">CIV-004</span>
+        <span class="ci-status st-resolved">Resolved ✓</span>
+      </div>
+      <div class="ci-type">🗑️ Sanitation</div>
+      <div class="ci-desc">Garbage pickup resumed, Lajpat Nagar</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill fill-resolved"></div></div>
+      </div>
+      <div class="ci-meta">Resolved Apr 3, 7:00 AM</div>
+    </div>
+
+    <div class="nav-divider" style="border-color:var(--card-border);"></div>
+    <div class="section-title">🏛️ Dept. Load</div>
+    <div class="dept-grid">
+      <div class="dept-card">
+        <div class="dept-emoji">💧</div>
+        <div class="dept-count">14</div>
+        <div class="dept-name">Water</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-emoji">🛣️</div>
+        <div class="dept-count">9</div>
+        <div class="dept-name">Roads</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-emoji">⚡</div>
+        <div class="dept-count">7</div>
+        <div class="dept-name">Electricity</div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-emoji">🗑️</div>
+        <div class="dept-count">5</div>
+        <div class="dept-name">Sanitation</div>
+      </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);border-radius:10px;padding:14px;color:white;font-size:12px;line-height:1.6;">
+      <div style="font-weight:700;font-size:13px;margin-bottom:6px;">📞 WhatsApp Helpline</div>
+      <div style="opacity:0.85;">Send "HELP" to</div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--saffron-light);">+91 80000 CIVIC</div>
+      <div style="opacity:0.7;margin-top:4px;font-size:11px;">Also available via IVR voice call</div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- COMPLAINT DETAIL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="m-id"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="m-time"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div class="modal-field">
+          <label>Category</label>
+          <div class="val" id="m-cat"></div>
+        </div>
+        <div class="modal-field">
+          <label>Priority</label>
+          <div class="val" id="m-priority"></div>
+        </div>
+        <div class="modal-field">
+          <label>Status</label>
+          <div class="val" id="m-status"></div>
+        </div>
+        <div class="modal-field">
+          <label>Assigned To</label>
+          <div class="val" id="m-assign"></div>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Description</label>
+        <div class="val" id="m-desc" style="background:var(--off-white);padding:10px;border-radius:8px;font-size:13px;line-height:1.5;"></div>
+      </div>
+      <div style="margin-top:16px;">
+        <label style="font-size:11px;font-weight:600;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:10px;">Resolution Timeline</label>
+        <div class="timeline-item">
+          <div class="tl-dot done">✓</div>
+          <div class="tl-content">
+            <div class="tl-label">Registered via CivicAI Bot</div>
+            <div class="tl-time" id="m-t1"></div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot done">✓</div>
+          <div class="tl-content">
+            <div class="tl-label">AI Auto-classified & Routed</div>
+            <div class="tl-time">Instantly — 2 minutes after submission</div>
+          </div>
+        </div>
+        <div class="timeline-item" id="m-tl3">
+          <div class="tl-dot active">⏳</div>
+          <div class="tl-content">
+            <div class="tl-label">Officer Assigned & Working</div>
+            <div class="tl-time">In progress — SLA: 3 days</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot pending">○</div>
+          <div class="tl-content">
+            <div class="tl-label">Citizen Confirmation</div>
+            <div class="tl-time">Awaiting resolution</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="11.js"></script>
+</body>
 </html>
