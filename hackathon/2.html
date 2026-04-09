@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CivicAI – Citizen Helpline</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ===========================
+       BASIC RESET & ROOT COLORS
+    =========================== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue:    #1A2B5E;   /* main dark blue */
+      --orange:  #FF6B00;   /* accent orange  */
+      --teal:    #0D7A7A;   /* teal green     */
+      --bg:      #F4F6FB;   /* light grey bg  */
+      --white:   #ffffff;
+      --grey:    #A8BFDC;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--blue);
+    }
+
+    /* ===========================
+       TOP NAVBAR
+    =========================== */
+    nav {
+      background: var(--blue);
+      color: white;
+      padding: 0 20px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 99;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .brand span { color: var(--orange); }
+
+    .logo-box {
+      background: var(--orange);
+      border-radius: 8px;
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+
+    .tag {
+      font-size: 11px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 3px 12px;
+      margin-left: 10px;
+    }
+
+    /* ===========================
+       ORANGE STRIP BELOW NAV
+    =========================== */
+    .strip {
+      height: 4px;
+      background: linear-gradient(90deg, var(--orange), #FF8C38);
+    }
+
+    /* ===========================
+       3 TAB BUTTONS (Chat / Dashboard / Track)
+    =========================== */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 16px 20px 0;
+    }
+
+    .tab-btn {
+      padding: 9px 20px;
+      border: none;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      background: #d9e0f0;
+      color: var(--blue);
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--blue);
+      color: white;
+    }
+
+    /* ===========================
+       MAIN PAGE AREA
+    =========================== */
+    .page {
+      display: none;          /* all pages hidden by default */
+      padding: 20px;
+    }
+
+    .page.show { display: block; }  /* only active page shown */
+
+    /* ===========================
+       CHAT PAGE — 2-column layout
+    =========================== */
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 16px;
+    }
+
+    /* Chat box */
+    .chat-box {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      height: 78vh;
+      overflow: hidden;
+    }
+
+    /* Chat top bar */
+    .chat-top {
+      background: var(--blue);
+      color: white;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bot-icon {
+      background: var(--orange);
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .bot-name { font-weight: 700; font-size: 15px; }
+    .bot-sub  { font-size: 11px; color: var(--grey); display: flex; align-items: center; gap: 6px; }
+
+    /* Green online dot */
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #4ADE80;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* Scrollable messages area */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Each message row */
+    .msg {
+      display: flex;
+      gap: 8px;
+      max-width: 80%;
+      animation: pop 0.3s ease;
+    }
+    @keyframes pop { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+
+    .msg.bot  { align-self: flex-start; }
+    .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+    /* Small avatar circle */
+    .avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .msg.bot  .avatar { background: var(--blue); }
+    .msg.user .avatar { background: var(--orange); }
+
+    /* Bubble */
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+    .msg.bot  .bubble { background: white; border-radius: 4px 14px 14px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .msg.user .bubble { background: var(--blue); color: white; border-radius: 14px 4px 14px 14px; }
+
+    .time { font-size: 10px; color: #8899bb; margin-top: 3px; }
+    .msg.user .time { text-align: right; }
+
+    /* Quick-reply chip buttons */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+    .chip {
+      background: white;
+      border: 1.5px solid var(--orange);
+      color: var(--orange);
+      padding: 5px 13px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: 'Poppins', sans-serif;
+    }
+    .chip:hover { background: var(--orange); color: white; }
+
+    /* Typing indicator (3 bouncing dots) */
+    .typing {
+      display: flex;
+      gap: 4px;
+      padding: 10px 14px;
+      background: white;
+      border-radius: 14px;
+      width: fit-content;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .tdot {
+      width: 6px; height: 6px;
+      background: var(--grey);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .tdot:nth-child(2) { animation-delay: 0.2s; }
+    .tdot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100%{transform:none} 30%{transform:translateY(-6px)} }
+
+    /* Chat input bar */
+    .chat-input-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px;
+      background: white;
+      border-top: 1px solid #e0e7f3;
+    }
+
+    .chat-input-bar input {
+      flex: 1;
+      border: 1.5px solid #d0d9ee;
+      border-radius: 24px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      background: var(--bg);
+    }
+    .chat-input-bar input:focus { border-color: var(--blue); background: white; }
+
+    .send-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .send-btn:hover { background: var(--orange); }
+
+    /* Right sidebar – recent complaints */
+    .sidebar {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      height: 78vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 { font-size: 13px; font-weight: 700; margin-bottom: 12px; border-bottom: 2px solid var(--bg); padding-bottom: 8px; }
+
+    /* Each complaint card in sidebar */
+    .c-card {
+      border: 1px solid #d0d9ee;
+      border-left: 4px solid var(--teal);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 12px;
+    }
+    .c-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .c-card.pending  { border-left-color: #D97706; }
+    .c-card.progress { border-left-color: var(--teal); }
+    .c-card.resolved { border-left-color: #16A34A; }
+
+    .c-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .c-id  { font-weight: 700; color: var(--blue); font-family: monospace; }
+
+    /* Status badges */
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .b-pending  { background: #fef3c7; color: #D97706; }
+    .b-progress { background: #ccf2f2; color: var(--teal); }
+    .b-resolved { background: #dcfce7; color: #16A34A; }
+
+    .c-meta { color: #8899bb; margin-top: 5px; }
+
+    /* Mini progress bar */
+    .pbar { height: 3px; background: #eee; border-radius: 3px; margin-top: 6px; }
+    .pfill { height: 100%; border-radius: 3px; }
+    .pfill.pending  { background: #D97706; width: 20%; }
+    .pfill.progress { background: var(--teal); width: 60%; }
+    .pfill.resolved { background: #16A34A; width: 100%; }
+
+    /* ===========================
+       DASHBOARD PAGE
+    =========================== */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid #d0d9ee;
+    }
+
+    .stat-num { font-size: 34px; font-weight: 700; }
+    .stat-num.blue   { color: var(--blue); }
+    .stat-num.orange { color: var(--orange); }
+    .stat-num.teal   { color: var(--teal); }
+    .stat-label { font-size: 12px; color: #4A5A7A; margin-top: 4px; }
+
+    /* Table */
+    .table-wrap {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .table-head {
+      background: var(--blue);
+      color: white;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 11px; color: #4A5A7A; font-weight: 600; }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--bg); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8faff; cursor: pointer; }
+
+    .view-btn {
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
+    .view-btn:hover { background: var(--orange); }
+
+    /* Priority dot */
+    .pdot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    .high { background: #DC2626; }
+    .med  { background: #D97706; }
+    .low  { background: #16A34A; }
+
+    /* ===========================
+       TRACK PAGE
+    =========================== */
+    .track-box {
+      background: white;
+      border-radius: 14px;
+      padding: 28px;
+      max-width: 640px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+
+    .track-box h2 { margin-bottom: 6px; }
+    .track-box p  { font-size: 13px; color: #4A5A7A; margin-bottom: 18px; }
+
+    .track-input-row { display: flex; gap: 10px; margin-bottom: 22px; }
+    .track-input-row input {
+      flex: 1;
+      border: 1.5px solid #d0d9ee;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+    }
+    .track-input-row input:focus { border-color: var(--blue); }
+    .track-input-row button {
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
+    .track-input-row button:hover { background: var(--orange); }
+
+    /* Result card */
+    #trackResult { display: none; }
+
+    .result-card {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #d0d9ee;
+    }
+
+    .result-top { display: flex; justify-content: space-between; margin-bottom: 16px; }
+    .result-top .label { font-size: 11px; color: #4A5A7A; font-weight: 600; text-transform: uppercase; }
+    .result-top .value { font-size: 16px; font-weight: 700; font-family: monospace; color: var(--blue); }
+
+    .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .result-grid .label { font-size: 11px; color: #4A5A7A; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
+    .result-grid .value { font-size: 14px; color: var(--blue); }
+
+    /* Timeline */
+    .timeline { margin-top: 6px; }
+    .tl-item { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+    .tl-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .tl-dot.done    { background: #dcfce7; color: #16A34A; }
+    .tl-dot.active  { background: #ccf2f2; color: var(--teal); }
+    .tl-dot.waiting { background: var(--bg); color: var(--grey); }
+    .tl-label { font-size: 13px; font-weight: 600; }
+    .tl-time  { font-size: 11px; color: var(--grey); margin-top: 2px; }
+
+    /* ===========================
+       MODAL (complaint detail popup)
+    =========================== */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 460px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+      animation: zoomIn 0.25s ease;
+    }
+    @keyframes zoomIn { from{opacity:0;transform:scale(0.94)} to{opacity:1;transform:none} }
+
+    .modal-top {
+      background: var(--blue);
+      color: white;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-top h3 { font-size: 16px; }
+    .modal-top span { font-size: 11px; color: var(--grey); }
+    .close-btn { background: none; border: none; color: var(--grey); font-size: 22px; cursor: pointer; }
+
+    .modal-body { padding: 20px; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .modal-field label { font-size: 10px; color: #4A5A7A; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 3px; }
+    .modal-field .val  { font-size: 14px; }
+    .desc-box { background: var(--bg); padding: 10px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+
+  </style>
+</head>
+<body>
+
+  <!-- ======= NAVBAR ======= -->
+  <nav>
+    <div class="brand">
+      <div class="logo-box">🏛️</div>
+      Civic<span>AI</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px; font-size:12px; color:var(--grey)">
+      <span class="tag">🎓 NSUT Hackathon</span>
+      <!-- Language buttons -->
+      <button onclick="setLang('en',this)" class="chip active" style="font-size:11px;">EN</button>
+      <button onclick="setLang('hi',this)" class="chip" style="font-size:11px;">हि</button>
+      <button onclick="setLang('ta',this)" class="chip" style="font-size:11px;">த</button>
+    </div>
+  </nav>
+  <div class="strip"></div>
+
+  <!-- ======= TAB BUTTONS ======= -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-chat"  onclick="switchTab('chat')">💬 AI Chat</button>
+    <button class="tab-btn"        id="tab-dash"  onclick="switchTab('dash')">📊 Dashboard</button>
+    <button class="tab-btn"        id="tab-track" onclick="switchTab('track')">🔍 Track</button>
+  </div>
+
+  <!-- ======= PAGE 1: CHAT ======= -->
+  <div class="page show" id="page-chat">
+    <div class="chat-layout">
+
+      <!-- Left: Chat window -->
+      <div class="chat-box">
+        <!-- Header -->
+        <div class="chat-top">
+          <div class="bot-icon">🤖</div>
+          <div>
+            <div class="bot-name">CivicAI Assistant</div>
+            <div class="bot-sub"><div class="dot"></div> Online · 24/7 · 5 languages</div>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages" id="chatMessages"></div>
+
+        <!-- Input bar -->
+        <div class="chat-input-bar">
+          <input id="chatInput" placeholder="Type your complaint or question..." onkeydown="if(event.key==='Enter') sendMsg()"/>
+          <button class="send-btn" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+
+      <!-- Right: Recent complaints -->
+      <div class="sidebar" id="sidebarComplaints">
+        <h3>📋 Recent Complaints</h3>
+
+        <div class="c-card progress" onclick="openModal('CIV-001','Water Supply','No water for 3 days — Block C, Dwarka','High','In Progress','Ramesh Kumar','Apr 1 · 9:12 AM')">
+          <div class="c-top">
+            <span class="c-id">CIV-001</span>
+            <span class="badge b-progress">In Progress</span>
+          </div>
+          <div>💧 Water Supply</div>
+          <div class="c-meta">No water for 3 days, Block C</div>
+          <div class="pbar"><div class="pfill progress"></div></div>
+          <div class="c-meta">Apr 1 · Ramesh Kumar</div>
+        </div>
+
+        <div class="c-card pending" onclick="openModal('CIV-002','Roads & Transport','Large pothole on MG Road','High','Pending','Unassigned','Apr 2 · 11:30 AM')">
+          <div class="c-top">
+            <span class="c-id">CIV-002</span>
+            <span class="badge b-pending">Pending</span>
+          </div>
+          <div>🛣️ Roads</div>
+          <div class="c-meta">Pothole near MG Road signal</div>
+          <div class="pbar"><div class="pfill pending"></div></div>
+          <div class="c-meta">Apr 2 · Unassigned</div>
+        </div>
+
+        <div class="c-card resolved" onclick="openModal('CIV-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM')">
+          <div class="c-top">
+            <span class="c-id">CIV-004</span>
+            <span class="badge b-resolved">Resolved ✓</span>
+          </div>
+          <div>🗑️ Sanitation</div>
+          <div class="c-meta">Garbage pickup resumed</div>
+          <div class="pbar"><div class="pfill resolved"></div></div>
+          <div class="c-meta">Resolved Apr 3</div>
+        </div>
+
+        <!-- Stats mini section -->
+        <h3 style="margin-top:14px;">🏛️ Dept. Load</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div style="background:var(--bg); border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:22px; font-weight:700; color:var(--blue);">14</div>
+            <div style="font-size:10px; color:#4A5A7A;">💧 Water</div>
+          </div>
+          <div style="background:var(--bg); border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:22px; font-weight:700; color:var(--blue);">9</div>
+            <div style="font-size:10px; color:#4A5A7A;">🛣️ Roads</div>
+          </div>
+          <div style="background:var(--bg); border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:22px; font-weight:700; color:var(--blue);">7</div>
+            <div style="font-size:10px; color:#4A5A7A;">⚡ Electricity</div>
+          </div>
+          <div style="background:var(--bg); border-radius:8px; padding:10px; text-align:center;">
+            <div style="font-size:22px; font-weight:700; color:var(--blue);">5</div>
+            <div style="font-size:10px; color:#4A5A7A;">🗑️ Sanitation</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======= PAGE 2: DASHBOARD ======= -->
+  <div class="page" id="page-dash">
+    <!-- 3 stat cards -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num blue">247</div>
+        <div class="stat-label">Total Complaints This Month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num orange">38</div>
+        <div class="stat-label">Pending Resolution</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num teal">1.8d</div>
+        <div class="stat-label">Avg. Resolution Time</div>
+      </div>
+    </div>
+
+    <!-- Complaints table -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <span>📋 Live Complaint Feed</span>
+        <span style="font-size:11px; opacity:0.7;">38 open</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Category</th><th>Issue</th>
+            <th>Priority</th><th>Status</th><th>Assigned</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM')">
+            <td><b>CIV-001</b></td>
+            <td>💧 Water</td>
+            <td>No water, Block C, Dwarka</td>
+            <td><span class="pdot high"></span>High</td>
+            <td><span class="badge b-progress">In Progress</span></td>
+            <td>Ramesh Kumar</td>
+            <td><button class="view-btn" onclick="openModal('CIV-20260403-001','Water Supply','No water supply for 3 days in Block C, Dwarka','High','In Progress','Ramesh Kumar, Water Dept.','Apr 1 · 9:12 AM');event.stopPropagation()">View</button></td>
+          </tr>
+          <tr onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road','High','Pending','Unassigned','Apr 2 · 11:30 AM')">
+            <td><b>CIV-002</b></td>
+            <td>🛣️ Roads</td>
+            <td>Pothole, MG Road</td>
+            <td><span class="pdot high"></span>High</td>
+            <td><span class="badge b-pending">Pending</span></td>
+            <td>Unassigned</td>
+            <td><button class="view-btn" onclick="openModal('CIV-20260403-002','Roads & Transport','Pothole on MG Road','High','Pending','Unassigned','Apr 2 · 11:30 AM');event.stopPropagation()">View</button></td>
+          </tr>
+          <tr onclick="openModal('CIV-20260403-003','Electricity','Street lights off for 5 nights, Rohini','Medium','In Progress','Suresh Yadav, BSES','Apr 2 · 2:00 PM')">
+            <td><b>CIV-003</b></td>
+            <td>⚡ Electricity</td>
+            <td>Street lights off, Rohini</td>
+            <td><span class="pdot med"></span>Medium</td>
+            <td><span class="badge b-progress">In Progress</span></td>
+            <td>Suresh Yadav</td>
+            <td><button class="view-btn" onclick="openModal('CIV-20260403-003','Electricity','Street lights off for 5 nights, Rohini','Medium','In Progress','Suresh Yadav, BSES','Apr 2 · 2:00 PM');event.stopPropagation()">View</button></td>
+          </tr>
+          <tr onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM')">
+            <td><b>CIV-004</b></td>
+            <td>🗑️ Sanitation</td>
+            <td>Garbage not collected, Lajpat Nagar</td>
+            <td><span class="pdot med"></span>Medium</td>
+            <td><span class="badge b-resolved">Resolved</span></td>
+            <td>Mohan, MCD</td>
+            <td><button class="view-btn" onclick="openModal('CIV-20260403-004','Sanitation','Garbage not collected for a week','Medium','Resolved','Mohan, MCD','Mar 31 · 8:00 AM');event.stopPropagation()">View</button></td>
+          </tr>
+          <tr onclick="openModal('CIV-20260403-005','Healthcare','Govt. clinic closed, no doctor','Low','Pending','Unassigned','Apr 3 · 10:15 AM')">
+            <td><b>CIV-005</b></td>
+            <td>🏥 Healthcare</td>
+            <td>Clinic closed, no notice</td>
+            <td><span class="pdot low"></span>Low</td>
+            <td><span class="badge b-pending">Pending</span></td>
+            <td>Unassigned</td>
+            <td><button class="view-btn" onclick="openModal('CIV-20260403-005','Healthcare','Govt. clinic closed, no doctor','Low','Pending','Unassigned','Apr 3 · 10:15 AM');event.stopPropagation()">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======= PAGE 3: TRACK ======= -->
+  <div class="page" id="page-track">
+    <div class="track-box">
+      <h2>🔍 Track Your Complaint</h2>
+      <p>Enter your Complaint ID to see live status. Try: <b>CIV-20260403-001</b></p>
+
+      <div class="track-input-row">
+        <input id="trackInput" placeholder="e.g. CIV-20260403-001"/>
+        <button onclick="trackComplaint()">Track →</button>
+      </div>
+
+      <!-- Result shows here -->
+      <div id="trackResult">
+        <div class="result-card">
+          <div class="result-top">
+            <div>
+              <div class="label">Complaint ID</div>
+              <div class="value" id="tr-id"></div>
+            </div>
+            <span class="badge" id="tr-status"></span>
+          </div>
+
+          <div class="result-grid">
+            <div>
+              <div class="label">Category</div>
+              <div class="value" id="tr-cat"></div>
+            </div>
+            <div>
+              <div class="label">Assigned To</div>
+              <div class="value" id="tr-assign"></div>
+            </div>
+          </div>
+
+          <!-- Progress timeline -->
+          <div class="label" style="margin-bottom:10px;">Timeline</div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot done">✓</div>
+              <div><div class="tl-label">Complaint Registered</div><div class="tl-time" id="tr-t1"></div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot done">✓</div>
+              <div><div class="tl-label">Auto-routed to Department</div><div class="tl-time">2 minutes after registration</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot active">⏳</div>
+              <div><div class="tl-label">Officer Working on it</div><div class="tl-time">In progress</div></div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot waiting">○</div>
+              <div><div class="tl-label">Resolution Confirmed</div><div class="tl-time">Estimated: within 3 days</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= MODAL POPUP ======= -->
+  <div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <div class="modal-top">
+        <div>
+          <h3 id="m-id"></h3>
+          <span id="m-time"></span>
+        </div>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="modal-field"><label>Category</label><div class="val" id="m-cat"></div></div>
+          <div class="modal-field"><label>Priority</label><div class="val" id="m-priority"></div></div>
+          <div class="modal-field"><label>Status</label><div class="val" id="m-status"></div></div>
+          <div class="modal-field"><label>Assigned To</label><div class="val" id="m-assign"></div></div>
+        </div>
+        <div class="modal-field">
+          <label>Description</label>
+          <div class="val desc-box" id="m-desc"></div>
+        </div>
+        <div style="margin-top:16px;">
+          <label style="font-size:10px;color:#4A5A7A;font-weight:700;text-transform:uppercase;display:block;margin-bottom:10px;">Timeline</label>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-dot done">✓</div><div><div class="tl-label">Registered via CivicAI</div><div class="tl-time" id="m-t1"></div></div></div>
+            <div class="tl-item"><div class="tl-dot done">✓</div><div><div class="tl-label">AI Auto-classified & Routed</div><div class="tl-time">2 minutes after submission</div></div></div>
+            <div class="tl-item" id="m-tl3"><div class="tl-dot active">⏳</div><div><div class="tl-label">Officer Working — SLA: 3 days</div><div class="tl-time">In progress</div></div></div>
+            <div class="tl-item"><div class="tl-dot waiting">○</div><div><div class="tl-label">Citizen Confirmation</div><div class="tl-time">Awaiting resolution</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================
+       JAVASCRIPT
+       All the logic is here, written with simple comments
+  ======================================================= -->
+  <script>
+
+    // ── 1. TAB SWITCHING ──────────────────────────────────
+    // Shows one page at a time, hides the others
+    function switchTab(name) {
+      // Remove "active" from all tab buttons
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+      // Activate the clicked tab and show its page
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('page-' + name).classList.add('show');
+    }
+
+
+    // ── 2. LANGUAGE SWITCHER ──────────────────────────────
+    let currentLang = 'en';
+
+    // Bot greeting text for each language
+    const greetings = {
+      en: { text: '🙏 Namaste! I am CivicAI, your 24/7 government helpline. How can I help?',
+            chips: ['Register a complaint', 'Check status', 'Emergency'] },
+      hi: { text: '🙏 नमस्ते! मैं CivicAI हूँ, आपकी सरकारी हेल्पलाइन।',
+            chips: ['शिकायत दर्ज करें', 'स्थिति जाँचें'] },
+      ta: { text: '🙏 வணக்கம்! நான் CivicAI, உங்கள் உதவி மையம்.',
+            chips: ['புகார் பதிவு', 'நிலை சரிபார்'] }
+    };
+
+    function setLang(lang, el) {
+      currentLang = lang;
+      // Highlight the clicked language button
+      document.querySelectorAll('nav .chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      // Clear chat and show greeting in new language
+      document.getElementById('chatMessages').innerHTML = '';
+      waitingForComplaint = false;
+      setTimeout(() => botSay(greetings[lang].text, greetings[lang].chips), 400);
+    }
+
+
+    // ── 3. CHAT BOT LOGIC ─────────────────────────────────
+
+    let waitingForComplaint = false;   // true = bot is waiting for complaint description
+    let complaintCategory   = '';      // stores chosen category like "💧 Water Supply"
+    let complaintCount      = 6;       // used to generate IDs like CIV-006, CIV-007...
+
+    // What the bot says for each keyword / chip
+    const botFlows = {
+      'register a complaint': {
+        text: 'Sure! Pick a category:',
+        chips: ['💧 Water Supply', '🛣️ Roads & Transport', '⚡ Electricity', '🗑️ Sanitation', '🏥 Healthcare']
+      },
+      '💧 water supply': {
+        text: 'Water issue noted! Briefly describe the problem:',
+        chips: []
+      },
+      '🛣️ roads & transport': {
+        text: 'Roads issue noted! What is the specific problem?',
+        chips: []
+      },
+      '⚡ electricity': {
+        text: 'Electricity issue noted! Describe the problem and your area:',
+        chips: []
+      },
+      '🗑️ sanitation': {
+        text: 'Sanitation issue noted! Please describe it:',
+        chips: []
+      },
+      '🏥 healthcare': {
+        text: 'Healthcare issue noted! Please describe the problem:',
+        chips: []
+      },
+      'check status': {
+        text: 'Please enter your Complaint ID (e.g. CIV-20260403-001)\n\nOr go to the 🔍 Track tab above!',
+        chips: []
+      },
+      'emergency': {
+        text: '🚨 Emergency Numbers:\n• Police: 100\n• Fire: 101\n• Ambulance: 102\n• Disaster: 108',
+        chips: ['Register urgent complaint']
+      }
+    };
+
+    // Bot sends a message (with typing delay)
+    function botSay(text, chips = []) {
+      const msgs = document.getElementById('chatMessages');
+
+      // Show "..." typing indicator first
+      const typing = document.createElement('div');
+      typing.className = 'msg bot';
+      typing.innerHTML = `<div class="avatar">🤖</div><div class="typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+      msgs.appendChild(typing);
+      msgs.scrollTop = msgs.scrollHeight;
+
+      // After 1 second, replace typing with actual message
+      setTimeout(() => {
+        typing.remove();
+        const div = document.createElement('div');
+        div.className = 'msg bot';
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `
+          <div class="avatar">🤖</div>
+          <div>
+            <div class="bubble">${text}</div>
+            ${chips.length ? '<div class="chips">' + chips.map(c => `<button class="chip" onclick="clickChip('${c}')">${c}</button>`).join('') + '</div>' : ''}
+            <div class="time">${time}</div>
+          </div>`;
+        msgs.appendChild(div);
+        msgs.scrollTop = msgs.scrollHeight;
+      }, 1000);
+    }
+
+    // User sends a message
+    function userSay(text) {
+      const msgs = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.className = 'msg user';
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      div.innerHTML = `
+        <div class="avatar">👤</div>
+        <div>
+          <div class="bubble">${text}</div>
+          <div class="time">${time}</div>
+        </div>`;
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    // When user clicks a chip button
+    function clickChip(text) {
+      userSay(text);
+      processInput(text.toLowerCase());
+    }
+
+    // When user types and clicks send / presses Enter
+    function sendMsg() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      userSay(text);
+
+      // If bot asked for complaint description, register it
+      if (waitingForComplaint) {
+        registerComplaint(text);
+        return;
+      }
+      processInput(text.toLowerCase());
+    }
+
+    // Decide what the bot should reply
+    function processInput(text) {
+      // Check if text matches any of our flows
+      for (const key in botFlows) {
+        if (text.includes(key)) {
+          const flow = botFlows[key];
+          // If this is a complaint category, set flag to collect description next
+          if (['💧 water supply','🛣️ roads & transport','⚡ electricity','🗑️ sanitation','🏥 healthcare'].includes(key)) {
+            complaintCategory = key;
+            waitingForComplaint = true;
+          }
+          botSay(flow.text, flow.chips);
+          return;
+        }
+      }
+
+      // If waiting for complaint text and user typed something
+      if (waitingForComplaint && text.length > 3) {
+        registerComplaint(text);
+        return;
+      }
+
+      // Default fallback reply
+      botSay('I understand! Could you give more details? Or choose an option 👇',
+        ['Register a complaint', 'Check status', 'Emergency']);
+    }
+
+    // Register the complaint and show confirmation
+    function registerComplaint(description) {
+      waitingForComplaint = false;
+      const id   = `CIV-20260403-00${complaintCount++}`;
+      const cat  = complaintCategory || '📋 General';
+      const dept = cat.includes('water') ? 'Water Supply Dept.'
+                 : cat.includes('road')  ? 'Roads & Transport Dept.'
+                 : 'Municipal Corporation';
+
+      botSay(
+        `✅ Complaint Registered!\n\nID: ${id}\nRouted to: ${dept}\nEstimated fix: 3 working days\n\nUse this ID to track your complaint in the 🔍 Track tab.`,
+        ['Register another', 'Check status']
+      );
+      complaintCategory = '';
+
+      // Add new card to the sidebar
+      setTimeout(() => {
+        const sidebar = document.getElementById('sidebarComplaints');
+        const firstCard = sidebar.querySelector('.c-card');
+        const card = document.createElement('div');
+        card.className = 'c-card pending';
+        card.style.animation = 'pop 0.4s ease';
+        card.innerHTML = `
+          <div class="c-top">
+            <span class="c-id">${id}</span>
+            <span class="badge b-pending">Pending</span>
+          </div>
+          <div>${cat}</div>
+          <div class="c-meta">${description.substring(0, 45)}...</div>
+          <div class="pbar"><div class="pfill pending"></div></div>
+          <div class="c-meta">Just now · Unassigned</div>`;
+        sidebar.insertBefore(card, firstCard);
+      }, 1600);
+    }
+
+
+    // ── 4. MODAL POPUP ───────────────────────────────────
+    function openModal(id, cat, desc, priority, status, assign, time) {
+      document.getElementById('m-id').textContent       = id;
+      document.getElementById('m-cat').textContent      = cat;
+      document.getElementById('m-desc').textContent     = desc;
+      document.getElementById('m-priority').textContent = priority;
+      document.getElementById('m-assign').textContent   = assign;
+      document.getElementById('m-time').textContent     = 'Filed: ' + time;
+      document.getElementById('m-t1').textContent       = time;
+
+      // Set status badge colour
+      const s = status === 'Resolved' ? 'resolved' : status === 'In Progress' ? 'progress' : 'pending';
+      document.getElementById('m-status').innerHTML = `<span class="badge b-${s}">${status}</span>`;
+
+      // If resolved, mark 3rd timeline dot as done
+      if (status === 'Resolved') {
+        const dot = document.getElementById('m-tl3').querySelector('.tl-dot');
+        dot.className = 'tl-dot done';
+        dot.textContent = '✓';
+      }
+
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('overlay').classList.remove('open');
+    }
+
+
+    // ── 5. TRACK COMPLAINT ───────────────────────────────
+    // Sample data — in a real app this comes from a server/database
+    const complaintDB = {
+      'CIV-20260403-001': { cat: '💧 Water Supply',    assign: 'Ramesh Kumar',  status: 'In Progress', time: 'Apr 1, 2026 · 9:12 AM'  },
+      'CIV-20260403-002': { cat: '🛣️ Roads & Transport', assign: 'Unassigned',   status: 'Pending',     time: 'Apr 2, 2026 · 11:30 AM' },
+      'CIV-20260403-003': { cat: '⚡ Electricity',       assign: 'Suresh Yadav', status: 'In Progress', time: 'Apr 2, 2026 · 2:00 PM'  },
+      'CIV-20260403-004': { cat: '🗑️ Sanitation',        assign: 'Mohan, MCD',   status: 'Resolved',    time: 'Mar 31, 2026 · 8:00 AM' },
+    };
+
+    function trackComplaint() {
+      const id   = document.getElementById('trackInput').value.trim().toUpperCase();
+      const data = complaintDB[id];
+
+      if (!data) {
+        alert('ID not found. Try: CIV-20260403-001');
+        return;
+      }
+
+      // Fill in result fields
+      document.getElementById('tr-id').textContent     = id;
+      document.getElementById('tr-cat').textContent    = data.cat;
+      document.getElementById('tr-assign').textContent = data.assign;
+      document.getElementById('tr-t1').textContent     = data.time;
+
+      const s = data.status === 'Resolved' ? 'resolved' : data.status === 'In Progress' ? 'progress' : 'pending';
+      const badge = document.getElementById('tr-status');
+      badge.textContent  = data.status;
+      badge.className    = 'badge b-' + s;
+
+      // Show the result section
+      const result = document.getElementById('trackResult');
+      result.style.display    = 'block';
+      result.style.animation  = 'pop 0.4s ease';
+    }
+
+
+    // ── 6. START THE CHAT ────────────────────────────────
+    setTimeout(() => botSay(greetings.en.text, greetings.en.chips), 500);
+
+  </script>
+</body>
+</html>
