@@ -2,8 +2,6 @@
 let heading = document.getElementById("heading");
 let input = document.getElementById("userText");
 let para = document.getElementById("para");
-let fontSize = 16;
-let isvisible = true;
 
 
 // Change heading text when button is clicked 

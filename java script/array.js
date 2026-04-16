@@ -31,3 +31,9 @@ console.log(squaredArray); // [1,4,9,16,25]
 let nearray = [1,2,3,4,5];
 let cubesArray = nearray.map(num=>num*num*num);
 console.log(cubesArray); // [1,8,27,64,125]
+
+// function expression
+let subtract = function(a, b) {
+    return a - b;
+};
+console.log(subtract(10, 5)); // 5
