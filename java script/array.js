@@ -25,8 +25,8 @@ console.log(mixedArray[4]); // [1,2,3]
 
 // map on array
 let newarray = [1, 2, 3, 4, 5];
-let squaredArray = newarray.map(num => num * num);
-console.log(squaredArray); // [1,4,9,16,25]
+let squareArray = newarray.map(num => num * num);
+console.log(squareArray); // [1,4,9,16,25]
 
 let nearray = [1, 2, 3, 4, 5];
 let cubesArray = nearray.map(num => num * num * num);
@@ -73,3 +73,25 @@ numbers.forEach(function (num) {
     console.log(num);
 });
 
+//map on array
+//map creates a new array populated with the results of calling a provided function on every element in the calling array
+let nums = [1, 2, 3, 4, 5];
+let squaredArray = newarray.map(num => num * num);
+console.log(squaredArray); // [1,4,9,16,25]
+let addedArray = nums.map(num => num + 5);
+console.log(addedArray); // [6,7,8,9,10]
+
+//filter on array
+//filter creates a new array with all elements that pass the test implemented by the provided function
+let numArray = [1, 2, 3, 4, 5];
+let filterdEvenNumbers = evenNumbers.filter(num => num % 2 === 0);
+console.log(filterdEvenNumbers); //[2,4]
+
+//reduce can be used to reduce an array to a single value by applying a function to each element and accumulating the result
+//accumulator is the accumulated value previously returned in the last invocation of the callback, or initialValue, if supplied. currentValue is the current element being processed in the array.
+let sum=[1,2,3,4,5];
+let totalSum = sum.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+console.log(totalSum); // 15
+let sums=[1,2,3,4,5];
+let totalSums = sums.reduce((a, c) => a + c, 2);
+console.log(totalSums); // 17
