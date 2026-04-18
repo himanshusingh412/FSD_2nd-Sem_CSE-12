@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisasterBridge — Real-time Disaster Relief Coordination</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --red: #E63946;
+            --red-dim: #7a1d23;
+            --amber: #F4A261;
+            --green: #52B788;
+            --blue: #457B9D;
+            --bg: #0d1117;
+            --bg2: #161b22;
+            --bg3: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text2: #8b949e;
+            --text3: #484f58;
+            --mono: 'IBM Plex Mono', monospace;
+            --sans: 'IBM Plex Sans', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 14px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            height: 52px;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--red);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .logo-text {
+            font-family: var(--mono);
+            font-weight: 600;
+            font-size: 15px;
+            letter-spacing: -0.3px;
+        }
+
+        .logo-text span {
+            color: var(--red);
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        .pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--red);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(1.3)
+            }
+        }
+
+        .clock {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text2);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 5px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 12px;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .btn:hover {
+            background: var(--bg3);
+            border-color: var(--text2);
+        }
+
+        .btn-red {
+            background: var(--red);
+            border-color: var(--red);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .btn-red:hover {
+            opacity: .85;
+        }
+
+        /* LAYOUT */
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            height: calc(100vh - 52px);
+        }
+
+        /* LEFT PANEL */
+        .left-panel {
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 8px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+
+        .stat-mini {
+            background: var(--bg3);
+            border-radius: 4px;
+            padding: 7px 8px;
+            text-align: center;
+        }
+
+        .stat-mini-val {
+            font-family: var(--mono);
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .stat-mini-label {
+            font-size: 9px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-top: 3px;
+        }
+
+        .v-red {
+            color: var(--red);
+        }
+
+        .v-amber {
+            color: var(--amber);
+        }
+
+        .v-green {
+            color: var(--green);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 4px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-btn {
+            padding: 3px 9px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: transparent;
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text2);
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .filter-btn.active {
+            border-color: var(--red);
+            color: var(--red);
+            background: rgba(230, 57, 70, .1);
+        }
+
+        .incidents-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .incidents-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .incidents-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .incidents-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .incident-card {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: .15s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .incident-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+
+        .incident-card.critical::before {
+            background: var(--red);
+        }
+
+        .incident-card.high::before {
+            background: var(--amber);
+        }
+
+        .incident-card.medium::before {
+            background: var(--green);
+        }
+
+        .incident-card:hover {
+            background: var(--bg3);
+        }
+
+        .incident-card.selected {
+            background: var(--bg3);
+            border-color: var(--text3);
+        }
+
+        .inc-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 5px;
+        }
+
+        .inc-id {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+        }
+
+        .inc-badge {
+            font-size: 9px;
+            font-family: var(--mono);
+            padding: 2px 6px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .badge-critical {
+            background: rgba(230, 57, 70, .15);
+            color: var(--red);
+        }
+
+        .badge-high {
+            background: rgba(244, 162, 97, .15);
+            color: var(--amber);
+        }
+
+        .badge-medium {
+            background: rgba(82, 183, 136, .15);
+            color: var(--green);
+        }
+
+        .inc-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .inc-meta {
+            font-size: 11px;
+            color: var(--text2);
+            display: flex;
+            gap: 10px;
+        }
+
+        .inc-needs {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .need-tag {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 2px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            font-family: var(--mono);
+        }
+
+        .ai-score {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 6px;
+        }
+
+        .ai-bar-bg {
+            flex: 1;
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .ai-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width .5s;
+        }
+
+        .ai-score-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text2);
+            width: 22px;
+            text-align: right;
+        }
+
+        /* MAP CENTER */
+        .map-center {
+            position: relative;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
+        }
+
+        .map-toolbar-title {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text2);
+            margin-right: auto;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text2);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .map-canvas {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg);
+        }
+
+        .map-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* SOS Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: .2s;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 460px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--red);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text2);
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 13px;
+            padding: 8px 10px;
+            transition: .15s;
+            outline: none;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--red);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .form-select option {
+            background: var(--bg2);
+        }
+
+        .needs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .need-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 7px 10px;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .need-check input {
+            accent-color: var(--red);
+        }
+
+        .need-check label {
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .need-check:has(input:checked) {
+            border-color: var(--red);
+            background: rgba(230, 57, 70, .08);
+        }
+
+        .severity-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .sev-btn {
+            flex: 1;
+            padding: 7px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text2);
+            font-size: 11px;
+            font-family: var(--mono);
+            cursor: pointer;
+            transition: .15s;
+            text-align: center;
+        }
+
+        .sev-btn.active-crit {
+            border-color: var(--red);
+            color: var(--red);
+            background: rgba(230, 57, 70, .1);
+        }
+
+        .sev-btn.active-high {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: rgba(244, 162, 97, .1);
+        }
+
+        .sev-btn.active-med {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(82, 183, 136, .1);
+        }
+
+        .modal-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            background: var(--bg2);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .right-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .right-tab {
+            flex: 1;
+            padding: 10px;
+            font-family: var(--mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text2);
+            border-bottom: 2px solid transparent;
+            transition: .15s;
+        }
+
+        .right-tab.active {
+            color: var(--text);
+            border-bottom-color: var(--red);
+        }
+
+        .right-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .right-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .right-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .tab-pane {
+            display: none;
+            padding: 12px;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* AI Panel */
+        .ai-section {
+            margin-bottom: 14px;
+        }
+
+        .ai-section-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .ai-insight {
+            background: var(--bg3);
+            border-radius: 5px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+        }
+
+        .ai-insight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .ai-tag {
+            font-family: var(--mono);
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+
+        .ai-text {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.6;
+        }
+
+        .priority-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .priority-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg3);
+            border-radius: 4px;
+            padding: 8px 10px;
+        }
+
+        .priority-rank {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text3);
+            width: 16px;
+            flex-shrink: 0;
+        }
+
+        .priority-info {
+            flex: 1;
+        }
+
+        .priority-name {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .priority-detail {
+            font-size: 10px;
+            color: var(--text2);
+            margin-top: 1px;
+        }
+
+        .priority-score {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Volunteer board */
+        .volunteer-card {
+            background: var(--bg3);
+            border-radius: 5px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+        }
+
+        .vol-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .vol-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .vol-status {
+            font-family: var(--mono);
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+
+        .status-available {
+            background: rgba(82, 183, 136, .15);
+            color: var(--green);
+        }
+
+        .status-deployed {
+            background: rgba(244, 162, 97, .15);
+            color: var(--amber);
+        }
+
+        .vol-meta {
+            font-size: 11px;
+            color: var(--text2);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .vol-skills {
+            display: flex;
+            gap: 3px;
+            margin-top: 5px;
+        }
+
+        .vol-skill {
+            font-size: 9px;
+            padding: 2px 5px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            color: var(--text3);
+            font-family: var(--mono);
+        }
+
+        .assign-btn {
+            margin-top: 6px;
+            width: 100%;
+            padding: 5px;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text2);
+            font-size: 11px;
+            font-family: var(--mono);
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .assign-btn:hover {
+            border-color: var(--green);
+            color: var(--green);
+            background: rgba(82, 183, 136, .08);
+        }
+
+        .assign-btn.assigned {
+            border-color: var(--amber);
+            color: var(--amber);
+            background: rgba(244, 162, 97, .08);
+        }
+
+        /* Log */
+        .log-entry {
+            display: flex;
+            gap: 8px;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-time {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text3);
+            white-space: nowrap;
+            padding-top: 1px;
+        }
+
+        .log-text {
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.5;
+        }
+
+        .log-text strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .log-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        /* Map markers */
+        .map-marker {
+            cursor: pointer;
+        }
+
+        .marker-ring {
+            animation: ring 2s infinite;
+            transform-origin: center;
+        }
+
+        @keyframes ring {
+
+            0%,
+            100% {
+                opacity: .6;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: 0;
+                transform: scale(2)
+            }
+        }
+
+        /* Tooltip */
+        .map-tooltip {
+            position: absolute;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 8px 10px;
+            pointer-events: none;
+            font-size: 11px;
+            z-index: 10;
+            min-width: 140px;
+            opacity: 0;
+            transition: opacity .15s;
+        }
+
+        .map-tooltip.visible {
+            opacity: 1;
+        }
+
+        .tt-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .tt-row {
+            color: var(--text2);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        /* Notification toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg2);
+            border: 1px solid var(--green);
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-size: 12px;
+            z-index: 300;
+            transform: translateY(60px);
+            opacity: 0;
+            transition: .3s;
+            max-width: 260px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-title {
+            font-weight: 500;
+            color: var(--green);
+            margin-bottom: 2px;
+            font-family: var(--mono);
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <div class="logo-text">Disaster<span>Bridge</span></div>
+            <div class="status-bar">
+                <div class="pulse"></div>LIVE — Kerala Flood Response
+            </div>
+        </div>
+        <div id="clock" class="clock">--:--:--</div>
+        <div class="header-actions">
+            <button class="btn" onclick="showTab('log')">Activity log</button>
+            <button class="btn btn-red" onclick="openSOS()">+ SOS Report</button>
+        </div>
+    </div>
+
+    <!-- MAIN LAYOUT -->
+    <div class="layout">
+
+        <!-- LEFT: Incidents list -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <div class="panel-title">Active incidents</div>
+                <div class="stats-row">
+                    <div class="stat-mini">
+                        <div class="stat-mini-val v-red" id="cnt-critical">3</div>
+                        <div class="stat-mini-label">Critical</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-val v-amber" id="cnt-high">4</div>
+                        <div class="stat-mini-label">High</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-val v-green" id="cnt-medium">5</div>
+                        <div class="stat-mini-label">Medium</div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-row">
+                <button class="filter-btn active" onclick="filterIncidents('all',this)">All</button>
+                <button class="filter-btn" onclick="filterIncidents('critical',this)">Critical</button>
+                <button class="filter-btn" onclick="filterIncidents('high',this)">High</button>
+                <button class="filter-btn" onclick="filterIncidents('medium',this)">Medium</button>
+            </div>
+            <div class="incidents-list" id="incidents-list"></div>
+        </div>
+
+        <!-- CENTER: Map -->
+        <div class="map-center">
+            <div class="map-toolbar">
+                <span class="map-toolbar-title">LIVE RESOURCE MAP — KERALA, INDIA</span>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--red)"></div>SOS / Need
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--green)"></div>Resource hub
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:var(--amber)"></div>In transit
+                </div>
+            </div>
+            <div class="map-canvas" id="map-canvas">
+                <svg class="map-svg" id="map-svg" viewBox="0 0 700 520" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Kerala outline (simplified) -->
+                    <g fill="none" stroke="#30363d" stroke-width="1.5">
+                        <path
+                            d="M250,30 L300,25 L360,40 L400,70 L420,110 L410,160 L430,200 L440,250 L430,300 L410,360 L380,410 L340,460 L300,490 L260,480 L240,440 L230,390 L220,330 L210,270 L205,210 L210,150 L220,100 L235,60 Z"
+                            fill="#1a2030" stroke="#2d3748" />
+                        <!-- Districts rough shapes -->
+                        <path d="M250,30 L360,40 L370,120 L300,140 L240,120 Z" fill="#1e2838" stroke="#30363d"
+                            stroke-width="0.5" />
+                        <path d="M370,120 L420,110 L430,200 L370,210 L300,140 Z" fill="#1c2535" stroke="#30363d"
+                            stroke-width="0.5" />
+                        <path d="M300,140 L370,210 L360,290 L280,300 L220,270 Z" fill="#1a2332" stroke="#30363d"
+                            stroke-width="0.5" />
+                        <path d="M360,290 L430,300 L410,360 L360,380 L280,360 L280,300 Z" fill="#1b2433"
+                            stroke="#30363d" stroke-width="0.5" />
+                        <path d="M280,360 L360,380 L340,460 L280,470 L240,440 L230,390 Z" fill="#192130"
+                            stroke="#30363d" stroke-width="0.5" />
+                        <!-- Water bodies -->
+                        <ellipse cx="180" cy="300" rx="25" ry="60" fill="#142030" stroke="#1d3a5a" stroke-width="1" />
+                        <text x="160" y="303" fill="#1d4a7a" font-size="8" font-family="IBM Plex Mono">LAKE</text>
+                    </g>
+                    <!-- District labels -->
+                    <text x="295" y="80" fill="#484f58" font-size="9" font-family="IBM Plex Mono"
+                        text-anchor="middle">KANNUR</text>
+                    <text x="370" y="165" fill="#484f58" font-size="9" font-family="IBM Plex Mono"
+                        text-anchor="middle">THRISSUR</text>
+                    <text x="310" y="235" fill="#484f58" font-size="9" font-family="IBM Plex Mono"
+                        text-anchor="middle">ERNAKULAM</text>
+                    <text x="335" y="335" fill="#484f58" font-size="9" font-family="IBM Plex Mono"
+                        text-anchor="middle">ALAPPUZHA</text>
+                    <text x="295" y="430" fill="#484f58" font-size="9" font-family="IBM Plex Mono"
+                        text-anchor="middle">THIRUVANANTHAPURAM</text>
+                    <!-- Map markers group -->
+                    <g id="map-markers"></g>
+                    <!-- Route lines -->
+                    <g id="route-lines"></g>
+                </svg>
+                <div class="map-tooltip" id="map-tooltip">
+                    <div class="tt-name" id="tt-name">—</div>
+                    <div class="tt-row"><span>Type</span><span id="tt-type">—</span></div>
+                    <div class="tt-row"><span>Severity</span><span id="tt-sev">—</span></div>
+                    <div class="tt-row"><span>AI Score</span><span id="tt-score">—</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: AI + Volunteers + Log -->
+        <div class="right-panel">
+            <div class="right-tabs">
+                <div class="right-tab active" onclick="showTab('ai',this)">AI Insights</div>
+                <div class="right-tab" onclick="showTab('volunteers',this)">Volunteers</div>
+                <div class="right-tab" onclick="showTab('log',this)">Log</div>
+            </div>
+            <div class="right-content">
+
+                <!-- AI Tab -->
+                <div class="tab-pane active" id="tab-ai">
+                    <div class="ai-section">
+                        <div class="ai-section-title">Gemini priority ranking</div>
+                        <div class="priority-list" id="priority-list"></div>
+                    </div>
+                    <div class="ai-section">
+                        <div class="ai-section-title">Situation analysis</div>
+                        <div class="ai-insight">
+                            <div class="ai-insight-header">
+                                <span class="ai-tag" style="background:rgba(230,57,70,.15);color:var(--red)">CRITICAL
+                                    ALERT</span>
+                                <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">2 min ago</span>
+                            </div>
+                            <div class="ai-text">Wayanad North cluster showing rapid deterioration. 3 simultaneous SOS
+                                reports within 800m radius. Recommend immediate resource reallocation from Thrissur hub
+                                (currently 40% underutilised).</div>
+                        </div>
+                        <div class="ai-insight">
+                            <div class="ai-insight-header">
+                                <span class="ai-tag" style="background:rgba(244,162,97,.15);color:var(--amber)">RESOURCE
+                                    GAP</span>
+                                <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">8 min ago</span>
+                            </div>
+                            <div class="ai-text">Medical supplies critically low in Alappuzha zone. Nearest available
+                                stock: Ernakulam hub, ~68km. ETA 1h 40min via NH66. Route viable — no flooding reported
+                                on NH66 as of last update.</div>
+                        </div>
+                        <div class="ai-insight">
+                            <div class="ai-insight-header">
+                                <span class="ai-tag"
+                                    style="background:rgba(82,183,136,.15);color:var(--green)">RECOMMENDATION</span>
+                                <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">12 min ago</span>
+                            </div>
+                            <div class="ai-text">Volunteer cluster in Kochi (4 available) best matched to Alappuzha
+                                medical run based on skills, proximity, and vehicle capacity. Assignment awaiting
+                                coordinator approval.</div>
+                        </div>
+                    </div>
+                    <div class="ai-section">
+                        <div class="ai-section-title">Resource coverage</div>
+                        <div style="background:var(--bg3);border-radius:5px;padding:12px">
+                            <div style="display:flex;flex-direction:column;gap:8px" id="coverage-bars"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volunteers Tab -->
+                <div class="tab-pane" id="tab-volunteers">
+                    <div id="volunteer-list"></div>
+                </div>
+
+                <!-- Log Tab -->
+                <div class="tab-pane" id="tab-log">
+                    <div id="activity-log"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SOS MODAL -->
+    <div class="modal-overlay" id="sos-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">New SOS Report</div>
+                <button class="modal-close" onclick="closeSOS()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="form-label">Reporter name</div>
+                    <input type="text" class="form-input" placeholder="Full name" id="sos-name">
+                </div>
+                <div class="form-group">
+                    <div class="form-label">Location / Area</div>
+                    <input type="text" class="form-input" placeholder="Village, district, or landmark" id="sos-location"
+                        value="">
+                </div>
+                <div class="form-group">
+                    <div class="form-label">Estimated people affected</div>
+                    <input type="number" class="form-input" placeholder="e.g. 45" id="sos-people">
+                </div>
+                <div class="form-group">
+                    <div class="form-label">Needs required (select all)</div>
+                    <div class="needs-grid">
+                        <div class="need-check"><input type="checkbox" id="n1"><label for="n1">Food & water</label>
+                        </div>
+                        <div class="need-check"><input type="checkbox" id="n2"><label for="n2">Medical aid</label></div>
+                        <div class="need-check"><input type="checkbox" id="n3"><label for="n3">Rescue /
+                                evacuation</label></div>
+                        <div class="need-check"><input type="checkbox" id="n4"><label for="n4">Shelter</label></div>
+                        <div class="need-check"><input type="checkbox" id="n5"><label for="n5">Clothing</label></div>
+                        <div class="need-check"><input type="checkbox" id="n6"><label for="n6">Communication</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-label">Severity level</div>
+                    <div class="severity-row">
+                        <button class="sev-btn active-crit" id="sev-critical"
+                            onclick="setSev('critical')">Critical</button>
+                        <button class="sev-btn" id="sev-high" onclick="setSev('high')">High</button>
+                        <button class="sev-btn" id="sev-medium" onclick="setSev('medium')">Medium</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-label">Additional details</div>
+                    <textarea class="form-textarea" placeholder="Road access, special needs, contact info..."
+                        id="sos-details"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeSOS()">Cancel</button>
+                <button class="btn btn-red" onclick="submitSOS()">Submit SOS Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+        <div class="toast-title" id="toast-title">—</div>
+        <div id="toast-body">—</div>
+    </div>
+
+    <script>
+        // DATA
+        const incidents = [
+            { id: 'INC-001', name: 'Wayanad North Village', severity: 'critical', type: 'Flood', needs: ['Food', 'Medical', 'Rescue'], score: 97, people: 340, time: '14 min', x: 270, y: 95 },
+            { id: 'INC-002', name: 'Alappuzha Backwaters', severity: 'critical', type: 'Flood', needs: ['Rescue', 'Shelter'], score: 93, people: 210, time: '28 min', x: 290, y: 340 },
+            { id: 'INC-003', name: 'Thrissur East Colony', severity: 'critical', type: 'Landslide', needs: ['Medical', 'Food'], score: 88, people: 145, time: '41 min', x: 375, y: 175 },
+            { id: 'INC-004', name: 'Kannur Coastal Zone', severity: 'high', type: 'Storm surge', needs: ['Evacuation', 'Food'], score: 74, people: 280, time: '1h 2m', x: 310, y: 48 },
+            { id: 'INC-005', name: 'Ernakulam West', severity: 'high', type: 'Flood', needs: ['Shelter', 'Clothing'], score: 68, people: 190, time: '1h 18m', x: 340, y: 235 },
+            { id: 'INC-006', name: 'Palakkad Border', severity: 'high', type: 'Flood', needs: ['Food', 'Water'], score: 61, people: 95, time: '1h 35m', x: 415, y: 150 },
+            { id: 'INC-007', name: 'Thiruvananthapuram South', severity: 'medium', type: 'Flash flood', needs: ['Medical'], score: 45, people: 60, time: '2h 10m', x: 280, y: 455 },
+            { id: 'INC-008', name: 'Kozhikode North', severity: 'medium', type: 'Flood', needs: ['Food', 'Shelter'], score: 38, people: 120, time: '2h 30m', x: 295, y: 135 },
+        ];
+
+        const hubs = [
+            { name: 'Kochi Relief Hub', x: 350, y: 240, stock: 'High', type: 'hub' },
+            { name: 'Thrissur Supply Center', x: 400, y: 165, stock: 'Medium', type: 'hub' },
+            { name: 'Kozhikode Distribution', x: 300, y: 130, stock: 'Low', type: 'hub' },
+        ];
+
+        const volunteers = [
+            { name: 'Arjun Menon', org: 'Red Cross Kerala', skills: ['Medical', 'Rescue'], location: 'Kochi', status: 'available', assigned: null },
+            { name: 'Priya Nair', org: 'NSS Unit 44', skills: ['Logistics', 'Food dist.'], location: 'Thrissur', status: 'deployed', assigned: 'INC-003' },
+            { name: 'Ravi Kumar', org: 'NDRF', skills: ['Rescue', 'Comms'], location: 'Kozhikode', status: 'available', assigned: null },
+            { name: 'Deepa Thomas', org: 'Volunteers India', skills: ['Medical', 'Shelter'], location: 'Kochi', status: 'available', assigned: null },
+            { name: 'Sanjay Pillai', org: 'Youth Brigade', skills: ['Food dist.', 'Logistics'], location: 'Alappuzha', status: 'deployed', assigned: 'INC-002' },
+        ];
+
+        const logs = [
+            { time: '14:32', color: 'var(--red)', text: '<strong>SOS received</strong> — Wayanad North, 340 affected, critical flood conditions' },
+            { time: '14:30', color: 'var(--green)', text: '<strong>Resource dispatched</strong> — 2 medical kits, 50 food packs from Kochi hub → INC-003' },
+            { time: '14:25', color: 'var(--amber)', text: '<strong>Volunteer assigned</strong> — Priya Nair deployed to Thrissur East Colony' },
+            { time: '14:18', color: 'var(--red)', text: '<strong>AI alert</strong> — Alappuzha cluster showing rapid severity increase, score +15 in 20 min' },
+            { time: '14:10', color: 'var(--green)', text: '<strong>Hub update</strong> — Kochi Relief Hub restocked: +200 food packs, +30 medical kits' },
+            { time: '13:55', color: 'var(--amber)', text: '<strong>Route update</strong> — NH66 confirmed passable, rerouting Kozhikode convoy' },
+            { time: '13:40', color: 'var(--red)', text: '<strong>New SOS</strong> — Alappuzha Backwaters, 210 stranded, rescue needed urgently' },
+            { time: '13:22', color: 'var(--green)', text: '<strong>Resolved</strong> — INC-011 (Munnar) marked resolved, 85 evacuated safely' },
+        ];
+
+        const coverage = [
+            { label: 'Food & water', pct: 58, color: 'var(--amber)' },
+            { label: 'Medical', pct: 32, color: 'var(--red)' },
+            { label: 'Rescue boats', pct: 71, color: 'var(--green)' },
+            { label: 'Shelter kits', pct: 44, color: 'var(--blue)' },
+            { label: 'Volunteers', pct: 67, color: 'var(--green)' },
+        ];
+
+        let selectedId = 'INC-001';
+        let currentFilter = 'all';
+        let currentSev = 'critical';
+
+        // CLOCK
+        function updateClock() {
+            const n = new Date();
+            document.getElementById('clock').textContent =
+                String(n.getHours()).padStart(2, '0') + ':' +
+                String(n.getMinutes()).padStart(2, '0') + ':' +
+                String(n.getSeconds()).padStart(2, '0') + ' IST';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // RENDER INCIDENTS
+        function renderIncidents() {
+            const list = document.getElementById('incidents-list');
+            const filtered = currentFilter === 'all' ? incidents : incidents.filter(i => i.severity === currentFilter);
+            list.innerHTML = filtered.map(inc => {
+                const colors = { critical: 'var(--red)', high: 'var(--amber)', medium: 'var(--green)' };
+                const fillW = inc.score + '%';
+                return `<div class="incident-card ${inc.severity} ${inc.id === selectedId ? 'selected' : ''}" onclick="selectIncident('${inc.id}')">
+      <div class="inc-top">
+        <span class="inc-id">${inc.id}</span>
+        <span class="inc-badge badge-${inc.severity}">${inc.severity}</span>
+      </div>
+      <div class="inc-name">${inc.name}</div>
+      <div class="inc-meta">
+        <span>${inc.type}</span>
+        <span>${inc.people} people</span>
+        <span>${inc.time} ago</span>
+      </div>
+      <div class="inc-needs">${inc.needs.map(n => `<span class="need-tag">${n}</span>`).join('')}</div>
+      <div class="ai-score">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text3)">AI</span>
+        <div class="ai-bar-bg"><div class="ai-bar-fill" style="width:${fillW};background:${colors[inc.severity]}"></div></div>
+        <span class="ai-score-label">${inc.score}</span>
+      </div>
+    </div>`;
+            }).join('');
+        }
+
+        function filterIncidents(f, btn) {
+            currentFilter = f;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderIncidents();
+        }
+
+        function selectIncident(id) {
+            selectedId = id;
+            renderIncidents();
+            highlightMarker(id);
+        }
+
+        // RENDER MAP MARKERS
+        function renderMap() {
+            const markers = document.getElementById('map-markers');
+            const routes = document.getElementById('route-lines');
+
+            // Route lines from hubs to critical incidents
+            const criticalIncs = incidents.filter(i => i.severity === 'critical');
+            routes.innerHTML = criticalIncs.map(inc => {
+                const hub = hubs[0];
+                return `<line x1="${hub.x}" y1="${hub.y}" x2="${inc.x}" y2="${inc.y}" stroke="#30363d" stroke-width="1" stroke-dasharray="4,4" opacity=".5"/>`;
+            }).join('');
+
+            markers.innerHTML = '';
+
+            // Hub markers
+            hubs.forEach(hub => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'map-marker');
+                g.innerHTML = `
+      <circle cx="${hub.x}" cy="${hub.y}" r="10" fill="#52B78820" stroke="#52B788" stroke-width="1.5"/>
+      <circle cx="${hub.x}" cy="${hub.y}" r="5" fill="#52B788"/>
+      <text x="${hub.x}" y="${hub.y + 20}" fill="#52B788" font-size="8" font-family="IBM Plex Mono" text-anchor="middle">${hub.name.split(' ')[0].toUpperCase()}</text>`;
+                g.addEventListener('mouseenter', (e) => showTooltip(e, hub.name, 'Resource Hub', '—', hub.stock + ' stock'));
+                g.addEventListener('mouseleave', hideTooltip);
+                markers.appendChild(g);
+            });
+
+            // Incident markers
+            const colors = { critical: '#E63946', high: '#F4A261', medium: '#52B788' };
+            incidents.forEach(inc => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'map-marker');
+                const c = colors[inc.severity];
+                const isSelected = inc.id === selectedId;
+                g.innerHTML = `
+      <circle class="${isSelected ? 'marker-ring' : ''}" cx="${inc.x}" cy="${inc.y}" r="18" fill="${c}20" stroke="${c}" stroke-width="${isSelected ? 2 : 1}" opacity="${isSelected ? 1 : .6}"/>
+      <circle cx="${inc.x}" cy="${inc.y}" r="${isSelected ? 8 : 6}" fill="${c}"/>
+      <text x="${inc.x}" y="${inc.y - 16}" fill="${c}" font-size="8" font-family="IBM Plex Mono" text-anchor="middle">${inc.id}</text>`;
+                g.addEventListener('mouseenter', (e) => showTooltip(e, inc.name, inc.type, inc.severity, inc.score));
+                g.addEventListener('mouseleave', hideTooltip);
+                g.addEventListener('click', () => selectIncident(inc.id));
+                markers.appendChild(g);
+            });
+        }
+
+        function highlightMarker(id) {
+            renderMap();
+        }
+
+        // TOOLTIP
+        function showTooltip(e, name, type, sev, score) {
+            const t = document.getElementById('map-tooltip');
+            const canvas = document.getElementById('map-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left + 12;
+            const y = e.clientY - rect.top - 10;
+            t.style.left = Math.min(x, rect.width - 160) + 'px';
+            t.style.top = y + 'px';
+            document.getElementById('tt-name').textContent = name;
+            document.getElementById('tt-type').textContent = type;
+            document.getElementById('tt-sev').textContent = sev;
+            document.getElementById('tt-score').textContent = score;
+            t.classList.add('visible');
+        }
+        function hideTooltip() { document.getElementById('map-tooltip').classList.remove('visible'); }
+
+        // AI PRIORITY
+        function renderPriority() {
+            const sorted = [...incidents].sort((a, b) => b.score - a.score).slice(0, 5);
+            const colors = { critical: 'var(--red)', high: 'var(--amber)', medium: 'var(--green)' };
+            document.getElementById('priority-list').innerHTML = sorted.map((inc, i) => `
+    <div class="priority-item">
+      <div class="priority-rank">#${i + 1}</div>
+      <div class="priority-info">
+        <div class="priority-name">${inc.name}</div>
+        <div class="priority-detail">${inc.type} · ${inc.people} affected</div>
+      </div>
+      <div class="priority-score" style="color:${colors[inc.severity]}">${inc.score}</div>
+    </div>`).join('');
+        }
+
+        // COVERAGE BARS
+        function renderCoverage() {
+            document.getElementById('coverage-bars').innerHTML = coverage.map(c => `
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:11px;color:var(--text2)">${c.label}</span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--text2)">${c.pct}%</span>
+      </div>
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+        <div style="height:100%;width:${c.pct}%;background:${c.color};border-radius:2px;transition:width .8s"></div>
+      </div>
+    </div>`).join('');
+        }
+
+        // VOLUNTEERS
+        function renderVolunteers() {
+            document.getElementById('volunteer-list').innerHTML = volunteers.map((v, i) => `
+    <div class="volunteer-card">
+      <div class="vol-header">
+        <div class="vol-name">${v.name}</div>
+        <span class="vol-status ${v.status === 'available' ? 'status-available' : 'status-deployed'}">${v.status.toUpperCase()}</span>
+      </div>
+      <div class="vol-meta">
+        <span>${v.org}</span>
+        <span>${v.location}</span>
+        ${v.assigned ? `<span style="color:var(--amber)">${v.assigned}</span>` : ''}
+      </div>
+      <div class="vol-skills">${v.skills.map(s => `<span class="vol-skill">${s}</span>`).join('')}</div>
+      ${v.status === 'available' ? `<button class="assign-btn" id="assign-${i}" onclick="assignVol(${i})">Assign to incident</button>` : `<button class="assign-btn assigned">Deployed to ${v.assigned}</button>`}
+    </div>`).join('');
+        }
+
+        function assignVol(i) {
+            volunteers[i].status = 'deployed';
+            volunteers[i].assigned = selectedId || 'INC-001';
+            renderVolunteers();
+            addLog('var(--amber)', `<strong>Volunteer assigned</strong> — ${volunteers[i].name} deployed to ${volunteers[i].assigned}`);
+            showToastMsg('Volunteer assigned', `${volunteers[i].name} → ${volunteers[i].assigned}`);
+        }
+
+        // LOG
+        function renderLog() {
+            document.getElementById('activity-log').innerHTML = logs.map(l => `
+    <div class="log-entry">
+      <div class="log-dot" style="background:${l.color}"></div>
+      <div class="log-time">${l.time}</div>
+      <div class="log-text">${l.text}</div>
+    </div>`).join('');
+        }
+
+        function addLog(color, text) {
+            const n = new Date();
+            const t = String(n.getHours()).padStart(2, '0') + ':' + String(n.getMinutes()).padStart(2, '0');
+            logs.unshift({ time: t, color, text });
+            renderLog();
+        }
+
+        // TABS
+        function showTab(id, btn) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.right-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.add('active');
+            if (btn) btn.classList.add('active');
+        }
+
+        // SOS MODAL
+        function openSOS() { document.getElementById('sos-modal').classList.add('open'); }
+        function closeSOS() { document.getElementById('sos-modal').classList.remove('open'); }
+        function setSev(s) {
+            currentSev = s;
+            ['critical', 'high', 'medium'].forEach(sv => {
+                const el = document.getElementById('sev-' + sv);
+                el.className = 'sev-btn' + (sv === s ? ' active-' + sv : '');
+            });
+        }
+
+        function submitSOS() {
+            const name = document.getElementById('sos-name').value || 'Unknown';
+            const loc = document.getElementById('sos-location').value || 'Unspecified area';
+            const people = document.getElementById('sos-people').value || '?';
+            const needs = ['Food & water', 'Medical aid', 'Rescue / evacuation', 'Shelter', 'Clothing', 'Communication']
+                .filter((_, i) => document.getElementById('n' + (i + 1)).checked);
+
+            const newInc = {
+                id: 'INC-' + String(incidents.length + 1).padStart(3, '0'),
+                name: loc,
+                severity: currentSev,
+                type: 'Reported',
+                needs: needs.length ? needs.map(n => n.split(' ')[0]) : ['Unknown'],
+                score: currentSev === 'critical' ? Math.floor(80 + Math.random() * 18) : currentSev === 'high' ? Math.floor(55 + Math.random() * 20) : Math.floor(25 + Math.random() * 25),
+                people: parseInt(people) || 50,
+                time: 'Just now',
+                x: 230 + Math.random() * 180,
+                y: 60 + Math.random() * 380,
+            };
+
+            incidents.unshift(newInc);
+            const counts = { critical: 0, high: 0, medium: 0 };
+            incidents.forEach(i => counts[i.severity]++);
+            document.getElementById('cnt-critical').textContent = counts.critical;
+            document.getElementById('cnt-high').textContent = counts.high;
+            document.getElementById('cnt-medium').textContent = counts.medium;
+
+            addLog('var(--red)', `<strong>New SOS</strong> — ${loc}, ~${people} affected, ${currentSev} severity`);
+            renderIncidents();
+            renderPriority();
+            renderMap();
+            closeSOS();
+            showToastMsg('SOS Submitted', `AI scoring ${newInc.id}: Priority ${newInc.score}/100`);
+
+            // Reset form
+            document.getElementById('sos-name').value = '';
+            document.getElementById('sos-location').value = '';
+            document.getElementById('sos-people').value = '';
+            ['n1', 'n2', 'n3', 'n4', 'n5', 'n6'].forEach(id => document.getElementById(id).checked = false);
+            setSev('critical');
+        }
+
+        // TOAST
+        function showToastMsg(title, body) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-body').textContent = body;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        // Simulate live updates
+        function liveUpdate() {
+            const msgs = [
+                ['var(--amber)', '<strong>AI re-scored</strong> — Alappuzha cluster priority raised to 95'],
+                ['var(--green)', '<strong>Resource delivered</strong> — 80 food packs reached INC-005'],
+                ['var(--red)', '<strong>Road blocked</strong> — NH17 flooded near Kozhikode, rerouting convoy'],
+                ['var(--green)', '<strong>Volunteer check-in</strong> — Ravi Kumar reporting from Kozhikode hub'],
+            ];
+            const m = msgs[Math.floor(Math.random() * msgs.length)];
+            addLog(m[0], m[1]);
+        }
+        setInterval(liveUpdate, 18000);
+
+        // INIT
+        renderIncidents();
+        renderMap();
+        renderPriority();
+        renderCoverage();
+        renderVolunteers();
+        renderLog();
+    </script>
+</body>
+
+</html>
