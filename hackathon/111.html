@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DisasterBridge - MVP Prototype</title>
+    <style>
+        :root {
+            --primary: #d32f2f;
+            --dark: #263238;
+            --success: #2e7d32;
+            --bg: #f4f6f8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: #333;
+        }
+        /* Navigation Tabs */
+        .nav-bar {
+            background-color: var(--dark);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .nav-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #455a64;
+            color: white;
+            transition: 0.2s;
+        }
+        .nav-bar button.active {
+            background: white;
+            color: var(--dark);
+        }
+        /* View Containers */
+        .view {
+            display: none;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .view.active {
+            display: block;
+        }
+        /* Cards & Forms */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-success { background-color: var(--success); }
+        
+        /* Dashboard Specifics */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .map-mockup {
+            background: #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            font-weight: bold;
+            color: #757575;
+            border: 2px dashed #bdbdbd;
+        }
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .high-priority { background-color: var(--primary); }
+        .med-priority { background-color: #f57c00; }
+        .low-priority { background-color: #fbc02d; color: black; }
+        
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <button id="tab-reporter" class="active" onclick="switchTab('reporter')">1. SOS Form (Victim)</button>
+        <button id="tab-ngo" onclick="switchTab('ngo')">2. NGO Dashboard</button>
+        <button id="tab-volunteer" onclick="switchTab('volunteer')">3. Volunteer Board</button>
+    </div>
+
+    <div id="view-reporter" class="view active">
+        <h2 style="color: var(--primary);">Request Help (Offline Mode Ready)</h2>
+        <div class="card">
+            <form id="sosForm">
+                <label>What is the primary need?</label>
+                <select id="category">
+                    <option value="Medical">Medical / Injury</option>
+                    <option value="Rescue">Rescue / Trapped</option>
+                    <option value="Food/Water">Food & Water</option>
+                    <option value="Shelter">Shelter Needed</option>
+                </select>
+
+                <label>How many people are affected?</label>
+                <input type="number" id="people" placeholder="e.g., 3" required>
+
+                <label>Describe the situation</label>
+                <textarea id="description" rows="3" placeholder="e.g., Water is rising fast, one person is injured." required></textarea>
+
+                <button type="button" class="btn" onclick="submitSOS()">SUBMIT SOS</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="view-ngo" class="view">
+        <h2 style="color: var(--dark);">Control Room: Live Needs Map</h2>
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Incoming Reports (AI Prioritized)</h3>
+                <div id="ngo-feed">
+                    <p style="color: #888;">No reports yet. Submit an SOS first.</p>
+                </div>
+            </div>
+            <div class="map-mockup">
+                [ Google Maps Integration Here ]<br>
+                Pins will drop here automatically.
+            </div>
+        </div>
+    </div>
+
+    <div id="view-volunteer" class="view">
+        <h2 style="color: var(--success);">Available Tasks (Nearest to you)</h2>
+        <div id="volunteer-feed">
+            <p style="color: #888;">No tasks assigned yet.</p>
+        </div>
+    </div>
+
+    <script>
+        // Mock Database
+        let database = [];
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-bar button').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('view-' + tabId).classList.add('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            if(tabId === 'ngo') renderNGOBoard();
+            if(tabId === 'volunteer') renderVolunteerBoard();
+        }
+
+        // 1. Submit Logic (Includes Mock AI Scoring)
+        function submitSOS() {
+            const category = document.getElementById('category').value;
+            const people = parseInt(document.getElementById('people').value) || 1;
+            const desc = document.getElementById('description').value;
+
+            if (!desc) { alert("Please describe the situation."); return; }
+
+            // MOCK AI LOGIC: Assigns priority based on keywords and people count
+            let urgencyScore = 0.5;
+            const descLower = desc.toLowerCase();
+            if(descLower.includes('trapped') || descLower.includes('bleeding') || descLower.includes('injury')) {
+                urgencyScore = 0.9;
+            } else if (descLower.includes('water') || descLower.includes('food')) {
+                urgencyScore = 0.7;
+            }
+
+            const vulnerability = Math.min((people * 0.1), 1.0);
+            const aiPriority = ((vulnerability * 0.4) + (urgencyScore * 0.6)).toFixed(2);
+
+            // Save to mock database
+            const report = {
+                id: 'SOS-' + Math.floor(Math.random() * 10000),
+                category: category,
+                people: people,
+                description: desc,
+                priority: parseFloat(aiPriority),
+                status: 'Pending'
+            };
+            
+            database.push(report);
+            
+            alert(`Report Logged! AI assigned a Priority Score of ${aiPriority}`);
+            document.getElementById('sosForm').reset();
+        }
+
+        // Helper to format priority badge
+        function getBadge(priority) {
+            if (priority >= 0.8) return `<span class="priority-badge high-priority">${priority} - CRITICAL</span>`;
+            if (priority >= 0.6) return `<span class="priority-badge med-priority">${priority} - HIGH</span>`;
+            return `<span class="priority-badge low-priority">${priority} - MED</span>`;
+        }
+
+        // 2. NGO Board Rendering
+        function renderNGOBoard() {
+            const feed = document.getElementById('ngo-feed');
+            
+            // Sort database by AI priority (highest first)
+            const sortedData = [...database].sort((a, b) => b.priority - a.priority);
+
+            if (sortedData.length === 0) {
+                feed.innerHTML = '<p style="color: #888;">No reports yet.</p>';
+                return;
+            }
+
+            feed.innerHTML = '';
+            sortedData.forEach(item => {
+                feed.innerHTML += `
+                    <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                        <div class="list-header">
+                            <strong>${item.id}: ${item.category}</strong>
+                            ${getBadge(item.priority)}
+                        </div>
+                        <p style="margin: 5px 0; font-size: 14px;">${item.description}</p>
+                        <small style="color: #666;">People affected: ${item.people} | Status: ${item.status}</small>
+                    </div>
+                `;
+            });
+        }
+
+        // 3. Volunteer Board Rendering
+        function renderVolunteerBoard() {
+            const feed = document.getElementById('volunteer-feed');
+            const pendingTasks = database.filter(item => item.status === 'Pending').sort((a, b) => b.priority - a.priority);
+
+            if (pendingTasks.length === 0) {
+                feed.innerHTML = '<p style="color: #888;">No pending tasks. Everyone is safe.</p>';
+                return;
+            }
+
+            feed.innerHTML = '';
+            pendingTasks.forEach((item, index) => {
+                feed.innerHTML += `
+                    <div class="card">
+                        <div class="list-header">
+                            <strong>Task: ${item.category}</strong>
+                            ${getBadge(item.priority)}
+                        </div>
+                        <p>${item.description}</p>
+                        <p><small>Requires payload for ${item.people} people.</small></p>
+                        <button class="btn btn-success" onclick="acceptTask(${index})">ACCEPT & NAVIGATE</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Volunteer Action
+        function acceptTask(index) {
+            // Find the task in the main db based on pending array
+            const pendingTasks = database.filter(item => item.status === 'Pending').sort((a, b) => b.priority - a.priority);
+            const targetId = pendingTasks[index].id;
+            
+            const dbIndex = database.findIndex(x => x.id === targetId);
+            database[dbIndex].status = 'In Transit';
+            
+            alert('Task Accepted! GPS routing would start here.');
+            renderVolunteerBoard(); // refresh
+        }
+    </script>
+</body>
+</html>

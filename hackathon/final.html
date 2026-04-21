@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BloodBridge — Smart Emergency Blood Matching</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════ DESIGN TOKENS ═══════════ */
+:root{
+  --blood:   #E8001A;
+  --blood2:  #E8001A1A;
+  --blood3:  #E8001A35;
+  --crimson: #C0001A;
+  --rose:    #FF4D6A;
+  --gold:    #FFB830;
+  --gold2:   #FFB8301A;
+  --green:   #00D68F;
+  --green2:  #00D68F1A;
+  --green3:  #00D68F35;
+  --blue:    #2D8BFF;
+  --blue2:   #2D8BFF1A;
+  --teal:    #00C8CB;
+  --teal2:   #00C8CB1A;
+  --f-d: 'Bricolage Grotesque', sans-serif;
+  --f-m: 'Geist Mono', monospace;
+}
+[data-theme="dark"]{
+  --bg:  #07090F; --bg2: #0D1119; --bg3: #121823;
+  --bg4: #171F2E; --bg5: #1C2638;
+  --b:   #1E2D42; --b2:  #263448;
+  --t1:  #EEF3FF; --t2:  #7A90B4; --t3:  #3A4F6A;
+}
+[data-theme="light"]{
+  --bg:  #F0F3FA; --bg2: #FFFFFF; --bg3: #F6F8FD;
+  --bg4: #EBF0FA; --bg5: #DDE5F5;
+  --b:   #C8D5EE; --b2:  #B0C3E0;
+  --t1:  #081525; --t2:  #4A607E; --t3:  #8A9DB8;
+}
+
+/* ═══════════ BASE ═══════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--t1);
+  font-family:var(--f-d);font-size:14px;line-height:1.55;
+  min-height:100vh;overflow-x:hidden;
+}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px}
+
+/* ═══════════ TOPBAR ═══════════ */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:56px;
+  background:var(--bg2);border-bottom:1px solid var(--b);
+  z-index:999;display:flex;align-items:center;padding:0 22px;
+}
+.t-brand{display:flex;align-items:center;gap:11px;margin-right:30px;flex-shrink:0}
+.brand-icon{
+  width:34px;height:34px;background:var(--blood);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;position:relative;
+  flex-shrink:0;
+}
+.brand-icon::after{
+  content:'✚';color:#fff;font-size:18px;font-weight:900;
+  position:absolute;
+}
+.brand-name{font-size:18px;font-weight:800;letter-spacing:-.5px}
+.brand-name span{color:var(--blood)}
+.t-nav{display:flex;gap:2px;flex:1;overflow-x:auto}
+.t-nav::-webkit-scrollbar{display:none}
+.tn-btn{
+  padding:6px 14px;border-radius:7px;border:none;
+  background:none;color:var(--t2);font-family:var(--f-d);
+  font-size:13px;font-weight:600;cursor:pointer;transition:.15s;
+  white-space:nowrap;display:flex;align-items:center;gap:5px;
+}
+.tn-btn:hover{background:var(--bg4);color:var(--t1)}
+.tn-btn.on{background:var(--blood2);color:var(--blood)}
+.tn-badge{
+  background:var(--blood);color:#fff;font-size:9px;
+  font-weight:800;padding:1px 5px;border-radius:8px;
+  font-family:var(--f-m);
+}
+.t-right{display:flex;align-items:center;gap:9px;margin-left:auto;flex-shrink:0}
+.emergency-pill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--blood2);border:1px solid var(--blood3);
+  border-radius:20px;padding:5px 12px;
+  font-family:var(--f-m);font-size:10px;color:var(--blood);font-weight:700;
+}
+.ep-dot{width:6px;height:6px;border-radius:50%;background:var(--blood);animation:ep 1.3s infinite}
+@keyframes ep{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.6)}}
+.ico-btn{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--bg4);border:1px solid var(--b);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--t2);transition:.15s;
+}
+.ico-btn:hover{background:var(--bg3);color:var(--t1)}
+.ico-btn svg{width:15px;height:15px}
+
+/* ═══════════ BUTTONS ═══════════ */
+.btn{
+  padding:8px 17px;border-radius:9px;border:none;cursor:pointer;
+  font-family:var(--f-d);font-size:13px;font-weight:700;
+  transition:.15s;display:inline-flex;align-items:center;gap:6px;
+  white-space:nowrap;
+}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+.btn-blood{background:var(--blood);color:#fff}
+.btn-blood:hover{background:var(--crimson);transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#000}
+.btn-green:hover{opacity:.88}
+.btn-gold{background:var(--gold);color:#000}
+.btn-gold:hover{opacity:.88}
+.btn-ghost{background:transparent;border:1px solid var(--b2);color:var(--t2)}
+.btn-ghost:hover{background:var(--bg4);color:var(--t1)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
+.btn-xs{padding:4px 9px;font-size:11px;border-radius:6px}
+
+/* ═══════════ LAYOUT ═══════════ */
+.layout{display:flex;padding-top:56px;min-height:100vh}
+.sidebar{
+  width:215px;flex-shrink:0;background:var(--bg2);
+  border-right:1px solid var(--b);position:fixed;
+  top:56px;left:0;bottom:0;overflow-y:auto;
+  padding:12px 9px;display:flex;flex-direction:column;z-index:99;
+}
+.sb-lbl{font-size:9px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;padding:7px 10px 4px}
+.sb-item{
+  display:flex;align-items:center;gap:9px;width:100%;
+  padding:8px 10px;border-radius:9px;background:none;border:none;
+  color:var(--t2);font-family:var(--f-d);font-size:13px;font-weight:600;
+  cursor:pointer;transition:.15s;text-align:left;
+}
+.sb-item:hover{background:var(--bg4);color:var(--t1)}
+.sb-item.on{background:var(--blood2);color:var(--blood)}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.sb-item.on svg{opacity:1}
+.sb-cnt{margin-left:auto;font-size:9px;font-family:var(--f-m);font-weight:800;padding:2px 6px;border-radius:7px}
+.c-blood{background:var(--blood);color:#fff}
+.c-gold{background:var(--gold);color:#000}
+.c-green{background:var(--green);color:#000}
+/* Blood type availability widget in sidebar */
+.sb-blood-box{
+  background:var(--blood2);border:1px solid var(--blood3);
+  border-radius:11px;padding:13px;margin:12px 0 0;
+}
+.sbb-title{font-family:var(--f-m);font-size:9px;color:var(--blood);font-weight:700;margin-bottom:8px}
+.sbb-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.sbb-cell{
+  background:var(--bg4);border-radius:7px;padding:6px 8px;
+  text-align:center;
+}
+.sbb-type{font-family:var(--f-m);font-size:11px;font-weight:700;color:var(--t1)}
+.sbb-count{font-size:9px;color:var(--t2);margin-top:1px}
+.sbb-cell.urgent{background:var(--blood2);border:1px solid var(--blood3)}
+.sbb-cell.urgent .sbb-type{color:var(--blood)}
+
+.main{flex:1;margin-left:215px;padding:22px;min-height:calc(100vh - 56px)}
+
+/* ═══════════ SCREENS ═══════════ */
+.screen{display:none}.screen.on{display:block}
+
+/* ═══════════ PAGE HEADER ═══════════ */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
+.ph-left{}
+.ph-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:3px}
+.ph-sub{font-size:12px;color:var(--t2)}
+.ph-acts{display:flex;gap:8px;flex-shrink:0;align-items:flex-start}
+
+/* ═══════════ CARDS ═══════════ */
+.card{background:var(--bg2);border:1px solid var(--b);border-radius:14px;overflow:hidden}
+.ch{padding:14px 18px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.ch-title{font-size:13px;font-weight:800;display:flex;align-items:center;gap:7px;color:var(--t1)}
+.ch-title svg{width:14px;height:14px;opacity:.55}
+.cb{padding:16px 18px}
+
+/* ═══════════ METRICS ═══════════ */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}
+.mc{
+  background:var(--bg2);border:1px solid var(--b);border-radius:14px;
+  padding:17px 18px;position:relative;overflow:hidden;transition:.2s;
+}
+.mc:hover{transform:translateY(-2px);border-color:var(--b2)}
+.mc-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.mc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+.mc-icon svg{width:17px;height:17px}
+.mi-r{background:var(--blood2);color:var(--blood)}
+.mi-g{background:var(--green2);color:var(--green)}
+.mi-gold{background:var(--gold2);color:var(--gold)}
+.mi-b{background:var(--blue2);color:var(--blue)}
+.mc-val{font-size:32px;font-weight:900;line-height:1;margin-bottom:3px;letter-spacing:-.5px}
+.mc-lbl{font-size:11px;color:var(--t2);margin-bottom:5px}
+.mc-delta{font-size:10px;font-family:var(--f-m);display:flex;align-items:center;gap:3px}
+.d-up{color:var(--blood)}.d-dn{color:var(--green)}
+
+/* ═══════════ BADGES ═══════════ */
+.badge{font-size:10px;font-family:var(--f-m);font-weight:700;padding:3px 8px;border-radius:5px;display:inline-block;white-space:nowrap}
+.bx-crit{background:var(--blood2);color:var(--blood);border:1px solid var(--blood3)}
+.bx-high{background:#FF6B2D1A;color:#FF6B2D;border:1px solid #FF6B2D30}
+.bx-med{background:var(--gold2);color:var(--gold);border:1px solid var(--gold)30}
+.bx-ok{background:var(--green2);color:var(--green);border:1px solid var(--green3)}
+.bx-done{background:var(--teal2);color:var(--teal);border:1px solid var(--teal)30}
+.bx-wait{background:var(--blue2);color:var(--blue);border:1px solid var(--blue)30}
+
+/* ═══════════ GEMINI BOX ═══════════ */
+.gemini-box{
+  background:var(--bg3);border:1px solid var(--blood)25;
+  border-radius:14px;padding:17px 20px;margin-bottom:18px;position:relative;overflow:hidden;
+}
+.gemini-box::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:120px;height:120px;border-radius:50%;
+  background:var(--blood);opacity:.04;
+}
+.gem-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--blood2);color:var(--blood);border:1px solid var(--blood3);
+  border-radius:20px;font-size:10px;font-family:var(--f-m);font-weight:700;
+  padding:3px 10px;margin-bottom:10px;
+}
+.gem-badge svg{width:11px;height:11px}
+.gem-text{font-size:13px;line-height:1.75;color:var(--t1);max-width:760px}
+.gem-text strong{color:var(--blood)}
+.gem-chips{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.gem-chip{
+  font-size:11px;padding:4px 11px;border-radius:20px;
+  background:var(--bg4);border:1px solid var(--b2);color:var(--t2);
+  cursor:pointer;transition:.15s;font-family:var(--f-m);
+}
+.gem-chip:hover{border-color:var(--blood);color:var(--blood)}
+
+/* ═══════════ GRIDS ═══════════ */
+.g2{display:grid;grid-template-columns:1fr 360px;gap:14px;margin-bottom:18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:18px}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+
+/* ═══════════ REQUEST TABLE ═══════════ */
+.req-head,.req-row{
+  display:grid;
+  grid-template-columns:80px 1fr 80px 80px 100px 90px;
+  gap:10px;align-items:center;padding:9px 18px;
+}
+.req-head{background:var(--bg3);border-bottom:1px solid var(--b);font-size:9px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.09em}
+.req-row{border-bottom:1px solid var(--b);cursor:pointer;transition:.12s}
+.req-row:hover{background:var(--bg4)}
+.req-row:last-child{border-bottom:none}
+.req-id{font-family:var(--f-m);font-size:11px;font-weight:700;color:var(--blood)}
+.req-name{font-size:13px;font-weight:700}
+.req-sub{font-size:10px;color:var(--t2);margin-top:1px}
+.blood-tag{
+  font-family:var(--f-m);font-size:14px;font-weight:800;
+  padding:4px 9px;border-radius:8px;
+  background:var(--blood2);color:var(--blood);border:1px solid var(--blood3);
+  text-align:center;
+}
+.score-bar{display:flex;align-items:center;gap:5px}
+.sc-num{font-family:var(--f-m);font-size:12px;font-weight:700;min-width:22px}
+.sc-bg{flex:1;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden}
+.sc-fill{height:100%;border-radius:2px}
+
+/* ═══════════ FEED ═══════════ */
+.feed-wrap{padding:0 18px 8px}
+.feed-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--b)}
+.feed-item:last-child{border-bottom:none}
+.fd-col{display:flex;flex-direction:column;align-items:center;padding-top:3px}
+.fd-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.fd-line{width:1px;background:var(--b);flex:1;margin-top:4px}
+.feed-item:last-child .fd-line{display:none}
+.fd-time{font-family:var(--f-m);font-size:10px;color:var(--t3);white-space:nowrap;padding-top:2px;width:38px}
+.fd-body{flex:1}
+.fd-title{font-size:12px;font-weight:700;line-height:1.4}
+.fd-sub{font-size:11px;color:var(--t2);margin-top:1px}
+
+/* ═══════════ MAP SCREEN ═══════════ */
+.map-layout{display:grid;grid-template-columns:1fr 320px;gap:14px;height:calc(100vh - 56px - 88px)}
+.map-wrap{background:var(--bg2);border:1px solid var(--b);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.map-bar{padding:10px 16px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px}
+.map-bar-title{font-family:var(--f-m);font-size:10px;color:var(--t2);margin-right:auto;font-weight:500}
+.leg{display:flex;gap:10px}
+.leg-i{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--t2)}
+.leg-dot{width:7px;height:7px;border-radius:50%}
+.map-canvas{
+  flex:1;position:relative;background:var(--bg);
+  background-image:radial-gradient(circle at 1px 1px,var(--b) 1px,transparent 0);
+  background-size:22px 22px;
+}
+.map-canvas svg{width:100%;height:100%}
+.map-tip{
+  position:absolute;background:var(--bg2);border:1px solid var(--b2);
+  border-radius:11px;padding:11px 14px;pointer-events:none;
+  z-index:20;min-width:180px;opacity:0;transition:opacity .15s;
+}
+.map-tip.vis{opacity:1}
+.mt-name{font-weight:800;font-size:13px;margin-bottom:6px}
+.mt-row{display:flex;justify-content:space-between;gap:14px;font-size:11px;color:var(--t2);margin-bottom:2px}
+.mt-row span:last-child{color:var(--t1);font-family:var(--f-m)}
+/* MAP DONOR CARDS */
+.map-right{overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+.map-right::-webkit-scrollbar{width:3px}
+.donor-card{background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:13px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+.donor-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.dc-avail::before{background:var(--green)}
+.dc-busy::before{background:var(--gold)}
+.dc-coming::before{background:var(--blood)}
+.donor-card:hover{background:var(--bg3);border-color:var(--b2)}
+.donor-card.sel{border-color:var(--blood);background:var(--blood2)}
+.dc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.dc-name{font-size:13px;font-weight:800}
+.dc-loc{font-size:10px;color:var(--t2);margin-top:1px}
+.dc-meta{display:flex;gap:8px;font-size:11px;color:var(--t2);margin-bottom:9px}
+.dc-btns{display:flex;gap:5px}
+/* ESCALATION TIMER */
+.esc-timer{
+  background:var(--gold2);border:1px solid var(--gold)30;
+  border-radius:10px;padding:10px 13px;margin-bottom:9px;
+  display:flex;align-items:center;gap:10px;
+}
+.esc-icon{font-size:18px}
+.esc-label{font-size:11px;color:var(--t2)}
+.esc-time{font-family:var(--f-m);font-size:20px;font-weight:800;color:var(--gold)}
+
+/* ═══════════ EMERGENCY REQUEST FORM ═══════════ */
+.req-form-layout{display:grid;grid-template-columns:1fr 330px;gap:18px}
+.rf-card{background:var(--bg2);border:1px solid var(--b);border-radius:14px;overflow:hidden}
+.rf-hdr{background:var(--blood);padding:20px 24px;display:flex;align-items:center;gap:14px}
+.rf-hdr-ico{width:46px;height:46px;border-radius:13px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.rf-hdr-t{font-size:18px;font-weight:900;color:#fff;letter-spacing:-.3px}
+.rf-hdr-s{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px}
+.rf-body{padding:24px;display:flex;flex-direction:column;gap:18px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.flbl{font-size:10px;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.07em}
+.finp,.fsel,.ftxt{
+  background:var(--bg3);border:1px solid var(--b2);border-radius:8px;
+  padding:10px 12px;color:var(--t1);font-family:var(--f-d);font-size:13px;
+  font-weight:600;transition:.15s;outline:none;width:100%;
+}
+.finp:focus,.fsel:focus,.ftxt:focus{border-color:var(--blood);box-shadow:0 0 0 3px var(--blood2)}
+.finp::placeholder,.ftxt::placeholder{color:var(--t3);font-weight:400}
+.ftxt{resize:vertical;min-height:80px}
+.fsel option{background:var(--bg2)}
+/* Blood group picker */
+.bg-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.bg-opt{
+  padding:10px 6px;border-radius:9px;border:2px solid var(--b);
+  background:transparent;cursor:pointer;text-align:center;
+  font-family:var(--f-m);font-size:14px;font-weight:800;
+  color:var(--t2);transition:.15s;
+}
+.bg-opt:hover{border-color:var(--b2);color:var(--t1)}
+.bg-opt.sel-bg{border-color:var(--blood);background:var(--blood2);color:var(--blood)}
+/* Urgency */
+.urg-row{display:flex;gap:7px}
+.urg-opt{
+  flex:1;padding:10px 7px;border-radius:9px;border:2px solid var(--b);
+  background:transparent;cursor:pointer;text-align:center;
+  font-family:var(--f-m);font-size:10px;font-weight:800;color:var(--t2);transition:.15s;
+}
+.urg-opt.uc{border-color:var(--blood);background:var(--blood2);color:var(--blood)}
+.urg-opt.uh{border-color:#FF6B2D;background:#FF6B2D1A;color:#FF6B2D}
+.urg-opt.um{border-color:var(--gold);background:var(--gold2);color:var(--gold)}
+.rf-footer{padding:16px 24px;border-top:1px solid var(--b);background:var(--bg3)}
+/* Score preview */
+.score-prev{background:var(--bg2);border:1px solid var(--b);border-radius:14px;padding:18px;margin-bottom:13px}
+.gauge-wrap{position:relative;width:100px;height:100px;display:flex;align-items:center;justify-content:center;margin:12px auto}
+.gauge-wrap svg{position:absolute;inset:0;width:100%;height:100%}
+.gauge-num{font-size:28px;font-weight:900;font-family:var(--f-d);position:relative;z-index:1}
+.af-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.af-lbl{font-size:11px;color:var(--t2);width:110px;flex-shrink:0}
+.af-bar{flex:1;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden}
+.af-fill{height:100%;border-radius:2px;transition:width .5s}
+.af-val{font-size:10px;font-family:var(--f-m);color:var(--t2);width:22px;text-align:right}
+
+/* ═══════════ DONOR REGISTER ═══════════ */
+.dr-layout{display:grid;grid-template-columns:1fr 300px;gap:18px}
+.dr-card{background:var(--bg2);border:1px solid var(--b);border-radius:14px;overflow:hidden}
+.dr-hdr{background:linear-gradient(135deg,#1A0A0E 0%,#2D0A12 100%);border-bottom:1px solid var(--blood3);padding:20px 24px}
+.dr-hdr-title{font-size:17px;font-weight:900;margin-bottom:4px}
+.dr-hdr-sub{font-size:12px;color:var(--t2)}
+/* Availability toggle */
+.avail-toggle{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--b);border-radius:10px;padding:13px 15px;cursor:pointer;transition:.15s}
+.avail-toggle:hover{border-color:var(--green)}
+.at-label{font-size:14px;font-weight:700}
+.at-sub{font-size:11px;color:var(--t2);margin-top:2px}
+.at-switch{width:44px;height:24px;background:var(--b2);border-radius:12px;position:relative;transition:.25s;flex-shrink:0}
+.at-switch.on{background:var(--green)}
+.at-knob{position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.at-switch.on .at-knob{left:23px}
+
+/* ═══════════ VOLUNTEER MOBILE PANEL ═══════════ */
+.mobile-frame{
+  background:var(--bg3);border:1px solid var(--b);border-radius:14px;
+  overflow:hidden;max-width:300px;
+}
+.mf-statusbar{background:var(--bg2);border-bottom:1px solid var(--b);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;font-family:var(--f-m);font-size:10px;color:var(--t3)}
+.mf-body{padding:16px}
+.notif-card{background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.notif-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blood)}
+.notif-app{font-size:10px;font-family:var(--f-m);color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em}
+.notif-title{font-size:14px;font-weight:900;color:var(--blood);margin-bottom:4px}
+.notif-body{font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:12px}
+.notif-btns{display:flex;gap:7px}
+.nb-yes{flex:1;padding:8px;border-radius:8px;background:var(--blood);border:none;color:#fff;font-family:var(--f-d);font-size:12px;font-weight:800;cursor:pointer;transition:.15s}
+.nb-yes:hover{background:var(--crimson)}
+.nb-no{flex:1;padding:8px;border-radius:8px;background:var(--bg4);border:1px solid var(--b2);color:var(--t2);font-family:var(--f-d);font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.nb-no:hover{background:var(--bg3);color:var(--t1)}
+/* Status flow */
+.status-flow{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.sf-step{display:flex;align-items:center;gap:9px;padding:9px 12px;background:var(--bg2);border:1px solid var(--b);border-radius:9px;transition:.3s}
+.sf-step.done{border-color:var(--green);background:var(--green2)}
+.sf-step.active{border-color:var(--blood);background:var(--blood2);animation:sfpulse 1.5s infinite}
+@keyframes sfpulse{0%,100%{opacity:1}50%{opacity:.7}}
+.sf-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sf-label{font-size:12px;font-weight:700}
+.sf-time{margin-left:auto;font-family:var(--f-m);font-size:10px;color:var(--t2)}
+
+/* ═══════════ DASHBOARD EXTRA ═══════════ */
+.compatibility-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.compat-cell{background:var(--bg3);border-radius:8px;padding:10px 8px;text-align:center}
+.compat-type{font-family:var(--f-m);font-size:13px;font-weight:800;color:var(--blood)}
+.compat-avail{font-size:10px;color:var(--t2);margin-top:2px}
+.compat-bar{height:3px;background:var(--bg5);border-radius:2px;overflow:hidden;margin-top:5px}
+.compat-fill{height:100%;border-radius:2px;background:var(--blood)}
+.compat-cell.crit-lack{background:var(--blood2);border:1px solid var(--blood3)}
+.compat-cell.crit-lack .compat-type{animation:ep 2s infinite}
+
+/* ═══════════ MODAL ═══════════ */
+.mo-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.2s}
+.mo-overlay.op{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--b2);border-radius:16px;width:480px;max-width:95vw;max-height:88vh;overflow-y:auto;transform:translateY(14px);transition:transform .2s}
+.mo-overlay.op .modal{transform:translateY(0)}
+.mo-hd{padding:18px 22px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.mo-title{font-size:16px;font-weight:900}
+.mo-close{width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--b);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t2);font-size:15px;transition:.15s}
+.mo-close:hover{background:var(--bg3);color:var(--t1)}
+.mo-body{padding:22px}
+.mo-req-box{background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px;border-left:3px solid var(--blood)}
+.mo-req-tag{font-family:var(--f-m);font-size:9px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em}
+.mo-req-name{font-size:14px;font-weight:800}
+.mo-req-sub{font-size:11px;color:var(--t2);margin-top:2px}
+.mo-donor-opt{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--bg3);border-radius:10px;border:1px solid var(--b);cursor:pointer;transition:.15s;margin-bottom:7px}
+.mo-donor-opt:hover{border-color:var(--b2);background:var(--bg4)}
+.mo-donor-opt.sel{border-color:var(--green);background:var(--green2)}
+.mo-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.mo-dn{font-size:13px;font-weight:700}
+.mo-ds{font-size:10px;color:var(--t2);margin-top:1px}
+.mo-score{display:flex;align-items:center;gap:5px;background:var(--green2);border-radius:20px;padding:3px 9px;margin-left:auto}
+.mo-sv{font-family:var(--f-m);font-size:12px;font-weight:800;color:var(--green)}
+.mo-foot{display:flex;gap:8px;margin-top:15px}
+
+/* ═══════════ TOAST ═══════════ */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:3000;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--bg2);border:1px solid var(--b2);border-radius:13px;padding:12px 16px;min-width:270px;display:flex;gap:9px;align-items:flex-start;transform:translateX(320px);transition:transform .3s cubic-bezier(.175,.885,.32,1.275);pointer-events:all}
+.toast.vis{transform:translateX(0)}
+.t-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.t-ico svg{width:14px;height:14px}
+.t-title{font-size:12px;font-weight:800;margin-bottom:2px}
+.t-desc{font-size:11px;color:var(--t2)}
+
+/* ═══════════ ANIMATIONS ═══════════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .4s both}
+.a1{animation-delay:.05s}.a2{animation-delay:.1s}.a3{animation-delay:.15s}.a4{animation-delay:.2s}
+/* SVG pulse for critical donors */
+.mark-pulse{animation:markpulse 2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes markpulse{0%,100%{opacity:.4}50%{opacity:.1}}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media(max-width:1060px){
+  .sidebar{width:50px}.sb-lbl,.sb-item span:not(svg),.sb-cnt,.sb-blood-box{display:none}
+  .sb-item{justify-content:center}.main{margin-left:50px}
+  .metrics{grid-template-columns:1fr 1fr}.g2,.req-form-layout,.map-layout,.dr-layout{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .main{margin-left:0;padding:12px}.sidebar{display:none}
+  .metrics{grid-template-columns:1fr 1fr}.g3,.g2e{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ TOPBAR ══════════════ -->
+<div class="topbar">
+  <div class="t-brand">
+    <div class="brand-icon"></div>
+    <span class="brand-name">Blood<span>Bridge</span></span>
+  </div>
+  <nav class="t-nav">
+    <button class="tn-btn on" onclick="nav('dash',this)">Dashboard</button>
+    <button class="tn-btn" onclick="nav('map',this)">Live Map <span class="tn-badge">5</span></button>
+    <button class="tn-btn" onclick="nav('req',this)">Emergency Request <span class="tn-badge">3</span></button>
+    <button class="tn-btn" onclick="nav('donor',this)">Donor Portal</button>
+    <button class="tn-btn" onclick="nav('notify',this)">Notifications</button>
+  </nav>
+  <div class="t-right">
+    <div class="emergency-pill"><div class="ep-dot"></div>3 CRITICAL ACTIVE</div>
+    <div class="ico-btn" onclick="toggleTheme()" title="Toggle theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </div>
+    <button class="btn btn-blood btn-sm" onclick="nav('req')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Emergency Request
+    </button>
+  </div>
+</div>
+
+<div class="layout">
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside class="sidebar">
+  <div>
+    <div class="sb-lbl">Command</div>
+    <button class="sb-item on" onclick="nav('dash',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="sb-item" onclick="nav('map',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      <span>Live Donor Map</span><span class="sb-cnt c-blood">5</span>
+    </button>
+  </div>
+  <div>
+    <div class="sb-lbl">Operations</div>
+    <button class="sb-item" onclick="nav('req',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>Emergency Request</span><span class="sb-cnt c-blood">3</span>
+    </button>
+    <button class="sb-item" onclick="nav('donor',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <span>Donor Portal</span><span class="sb-cnt c-gold">28</span>
+    </button>
+    <button class="sb-item" onclick="nav('notify',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      <span>Notifications</span><span class="sb-cnt c-green">2</span>
+    </button>
+  </div>
+  <div class="sb-blood-box">
+    <div class="sbb-title">⚡ AVAILABILITY NOW</div>
+    <div class="sbb-grid" id="sb-blood-avail"></div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- ══════════════ DASHBOARD ══════════════ -->
+<div id="sc-dash" class="screen on">
+  <div class="ph anim">
+    <div>
+      <div class="ph-title">Blood Response Command</div>
+      <div class="ph-sub">City Medical Emergency Network · <span id="dash-clock" style="font-family:var(--f-m)"></span> · <span style="color:var(--blood)">3 critical requests active</span></div>
+    </div>
+    <div class="ph-acts">
+      <button class="btn btn-ghost btn-sm">Export Report</button>
+      <button class="btn btn-blood btn-sm" onclick="nav('req')">+ New Request</button>
+    </div>
+  </div>
+
+  <!-- GEMINI SUMMARY -->
+  <div class="gemini-box anim a1">
+    <div class="gem-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Gemini AI · Priority Analysis · Refreshed 90 sec ago
+    </div>
+    <div class="gem-text">
+      <strong>CRITICAL:</strong> Patient at Apollo Hospital needs <strong>O−</strong> (universal donor) for emergency trauma surgery — only 2 active donors within 5km. <strong>RK-004 (Rajan Kumar, 1.8km)</strong> is the top match and available now. AB+ requests at City General have 4 donors nearby — lower urgency. Recommend notifying O− donors immediately and pre-alerting Kokilaben blood bank for backup.
+    </div>
+    <div class="gem-chips">
+      <div class="gem-chip">🩸 Notify O− donors now</div>
+      <div class="gem-chip" onclick="nav('map')">📍 View on map</div>
+      <div class="gem-chip">🏥 Alert Kokilaben backup</div>
+      <div class="gem-chip" onclick="nav('notify')">📱 Check responses</div>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics anim a2">
+    <div class="mc">
+      <div class="mc-bar" style="background:var(--blood)"></div>
+      <div class="mc-icon mi-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div>
+      <div class="mc-val">5</div><div class="mc-lbl">Active Requests</div>
+      <div class="mc-delta d-up">▲ +2 in last hour</div>
+    </div>
+    <div class="mc">
+      <div class="mc-bar" style="background:var(--gold)"></div>
+      <div class="mc-icon mi-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+      <div class="mc-val">28</div><div class="mc-lbl">Active Donors</div>
+      <div class="mc-delta d-up">▲ 6 toggled on today</div>
+    </div>
+    <div class="mc">
+      <div class="mc-bar" style="background:var(--green)"></div>
+      <div class="mc-icon mi-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="mc-val" id="m-resolved">7</div><div class="mc-lbl">Requests Fulfilled</div>
+      <div class="mc-delta d-dn">▼ 312 lives impacted</div>
+    </div>
+    <div class="mc">
+      <div class="mc-bar" style="background:var(--blue)"></div>
+      <div class="mc-icon mi-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="mc-val">4.2m</div><div class="mc-lbl">Avg Response Time</div>
+      <div class="mc-delta d-dn">▼ 47 min faster than avg</div>
+    </div>
+  </div>
+
+  <!-- TABLE + FEED -->
+  <div class="g2 anim a3">
+    <div class="card">
+      <div class="ch">
+        <div class="ch-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>Active Requests — Priority Order</div>
+        <button class="btn btn-ghost btn-sm" onclick="nav('map')">Map View</button>
+      </div>
+      <div class="req-head"><div>ID</div><div>Patient</div><div>Blood</div><div>Units</div><div>AI Score</div><div>Status</div></div>
+      <div id="dash-req-body"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ch-title">Live Activity</div><span class="badge bx-ok">Live</span></div>
+      <div class="feed-wrap"><div id="dash-feed"></div></div>
+    </div>
+  </div>
+
+  <!-- BLOOD AVAILABILITY + COMPAT -->
+  <div class="g2e anim a4">
+    <div class="card">
+      <div class="ch"><div class="ch-title">Blood Group Availability</div></div>
+      <div class="cb"><div class="compatibility-grid" id="compat-grid"></div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ch-title">Today's Stats</div></div>
+      <div class="cb" style="display:flex;flex-direction:column;gap:13px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:5px"><span>O− availability (critical)</span><span style="font-family:var(--f-m);color:var(--blood)">LOW — 2 donors</span></div>
+          <div style="height:5px;background:var(--bg5);border-radius:3px;overflow:hidden"><div style="width:14%;height:100%;background:var(--blood);border-radius:3px"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:5px"><span>Match success rate</span><span style="font-family:var(--f-m)">94%</span></div>
+          <div style="height:5px;background:var(--bg5);border-radius:3px;overflow:hidden"><div style="width:94%;height:100%;background:var(--green);border-radius:3px"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:5px"><span>Donors responded in 8 min</span><span style="font-family:var(--f-m)">81%</span></div>
+          <div style="height:5px;background:var(--bg5);border-radius:3px;overflow:hidden"><div style="width:81%;height:100%;background:var(--teal);border-radius:3px"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:5px"><span>Escalation triggered today</span><span style="font-family:var(--f-m)">3 times</span></div>
+          <div style="height:5px;background:var(--bg5);border-radius:3px;overflow:hidden"><div style="width:30%;height:100%;background:var(--gold);border-radius:3px"></div></div>
+        </div>
+        <div style="border-top:1px solid var(--b);padding-top:12px">
+          <div style="font-size:10px;color:var(--t3);font-family:var(--f-m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">AI dedup removed</div>
+          <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:26px;font-weight:900;color:var(--teal)">12</span><span style="font-size:12px;color:var(--t2)">duplicate requests today</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LIVE MAP ══════════════ -->
+<div id="sc-map" class="screen">
+  <div class="ph anim">
+    <div><div class="ph-title">Live Donor Map</div><div class="ph-sub">Real-time donor locations · Availability-filtered · Mumbai metro area</div></div>
+    <div class="ph-acts">
+      <button class="btn btn-ghost btn-sm">Filter Blood Group</button>
+      <button class="btn btn-blood btn-sm">Notify All Nearby</button>
+    </div>
+  </div>
+  <div class="map-layout anim a1">
+    <div class="map-wrap">
+      <div class="map-bar">
+        <span class="map-bar-title">LIVE DONOR MAP — MUMBAI EMERGENCY NETWORK</span>
+        <div class="leg">
+          <div class="leg-i"><div class="leg-dot" style="background:var(--green)"></div>Available</div>
+          <div class="leg-i"><div class="leg-dot" style="background:var(--gold)"></div>Busy</div>
+          <div class="leg-i"><div class="leg-dot" style="background:var(--blood)"></div>En Route</div>
+          <div class="leg-i"><div class="leg-dot" style="background:var(--blue)"></div>Hospital</div>
+        </div>
+        <button class="btn btn-blood btn-sm" onclick="nav('req')">+ Request</button>
+      </div>
+      <div class="map-canvas" id="map-canvas">
+        <svg id="map-svg" viewBox="0 0 660 480" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <!-- Mumbai road grid -->
+          <line x1="0" y1="240" x2="660" y2="240" stroke="#1E2D42" stroke-width="1.5" stroke-dasharray="8,6"/>
+          <line x1="330" y1="0" x2="330" y2="480" stroke="#1E2D42" stroke-width="1.5" stroke-dasharray="8,6"/>
+          <line x1="0" y1="120" x2="660" y2="120" stroke="#1E2D42" stroke-width="1" stroke-dasharray="6,8" opacity=".5"/>
+          <line x1="0" y1="360" x2="660" y2="360" stroke="#1E2D42" stroke-width="1" stroke-dasharray="6,8" opacity=".5"/>
+          <line x1="165" y1="0" x2="165" y2="480" stroke="#1E2D42" stroke-width="1" stroke-dasharray="6,8" opacity=".5"/>
+          <line x1="495" y1="0" x2="495" y2="480" stroke="#1E2D42" stroke-width="1" stroke-dasharray="6,8" opacity=".5"/>
+          <!-- Area labels -->
+          <text x="82" y="60" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">ANDHERI</text>
+          <text x="330" y="60" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">BANDRA</text>
+          <text x="560" y="60" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">POWAI</text>
+          <text x="82" y="300" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">WORLI</text>
+          <text x="330" y="300" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">DADAR</text>
+          <text x="560" y="300" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">KURLA</text>
+          <text x="82" y="420" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">COLABA</text>
+          <text x="330" y="420" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">MATUNGA</text>
+          <text x="560" y="420" fill="#3A4F6A" font-size="10" font-family="Geist Mono, monospace" text-anchor="middle">GHATKOPAR</text>
+          <g id="map-markers"></g>
+        </svg>
+        <div class="map-tip" id="map-tip">
+          <div class="mt-name" id="mt-name"></div>
+          <div class="mt-row"><span>Blood Group</span><span id="mt-bg"></span></div>
+          <div class="mt-row"><span>Status</span><span id="mt-st"></span></div>
+          <div class="mt-row"><span>Distance</span><span id="mt-dist"></span></div>
+          <div class="mt-row"><span>Match Score</span><span id="mt-sc"></span></div>
+          <div class="mt-row"><span>Last Donated</span><span id="mt-last"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="map-right">
+      <!-- Escalation Timer -->
+      <div class="esc-timer">
+        <div class="esc-icon">⏱</div>
+        <div style="flex:1">
+          <div class="esc-label">Auto-escalation in</div>
+          <div class="esc-time" id="esc-timer">07:24</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="resetTimer()">Reset</button>
+      </div>
+      <div id="map-donor-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ EMERGENCY REQUEST FORM ══════════════ -->
+<div id="sc-req" class="screen">
+  <div class="ph anim"><div><div class="ph-title">Emergency Blood Request</div><div class="ph-sub">Gemini-scored matching · Notified within 60 seconds</div></div></div>
+  <div class="req-form-layout anim a1">
+    <div class="rf-card">
+      <div class="rf-hdr">
+        <div class="rf-hdr-ico">🏥</div>
+        <div><div class="rf-hdr-t">Emergency Blood Request Form</div><div class="rf-hdr-s">BloodBridge · Matched donors notified in under 60 seconds</div></div>
+      </div>
+      <div class="rf-body">
+        <div class="frow">
+          <div class="fg"><div class="flbl">Hospital / Clinic Name</div><input class="finp" id="f-hosp" placeholder="Apollo Hospital, Andheri" type="text"></div>
+          <div class="fg"><div class="flbl">Doctor / Contact Name</div><input class="finp" id="f-doc" placeholder="Dr. Sharma" type="text"></div>
+        </div>
+        <div class="frow">
+          <div class="fg"><div class="flbl">Patient Name</div><input class="finp" id="f-pat" placeholder="Patient name" type="text"></div>
+          <div class="fg"><div class="flbl">Contact Number</div><input class="finp" id="f-ph" placeholder="+91 98XXX XXXXX" type="tel"></div>
+        </div>
+        <div class="fg">
+          <div class="flbl">Blood Group Required</div>
+          <div class="bg-picker" id="bg-picker">
+            <div class="bg-opt sel-bg" onclick="selBG(this,'O−')">O−</div>
+            <div class="bg-opt" onclick="selBG(this,'O+')">O+</div>
+            <div class="bg-opt" onclick="selBG(this,'A−')">A−</div>
+            <div class="bg-opt" onclick="selBG(this,'A+')">A+</div>
+            <div class="bg-opt" onclick="selBG(this,'B−')">B−</div>
+            <div class="bg-opt" onclick="selBG(this,'B+')">B+</div>
+            <div class="bg-opt" onclick="selBG(this,'AB−')">AB−</div>
+            <div class="bg-opt" onclick="selBG(this,'AB+')">AB+</div>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg"><div class="flbl">Units Required</div><input class="finp" id="f-units" placeholder="e.g. 2" type="number" min="1" max="10" oninput="updateReqScore()"></div>
+          <div class="fg"><div class="flbl">Required By</div><input class="finp" id="f-time" placeholder="Within 2 hours" type="text"></div>
+        </div>
+        <div class="fg">
+          <div class="flbl">Urgency Level</div>
+          <div class="urg-row">
+            <div class="urg-opt uc" id="u-critical" onclick="setUrg('critical')">🔴 CRITICAL</div>
+            <div class="urg-opt" id="u-high" onclick="setUrg('high')">🟠 HIGH</div>
+            <div class="urg-opt" id="u-medium" onclick="setUrg('medium')">🟡 MEDIUM</div>
+          </div>
+        </div>
+        <div class="fg">
+          <div class="flbl">Patient Condition</div>
+          <select class="fsel" id="f-cond" onchange="updateReqScore()">
+            <option>Trauma / Surgery</option>
+            <option>Cancer treatment</option>
+            <option>Newborn / Neonatal</option>
+            <option>Chronic anaemia</option>
+            <option>Accident / Emergency</option>
+            <option>Post-surgical recovery</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <div class="flbl">Hospital Location</div>
+          <input class="finp" id="f-hloc" placeholder="Full address or landmark" type="text">
+        </div>
+        <div class="fg full">
+          <div class="flbl">Additional Notes</div>
+          <textarea class="ftxt" id="f-notes" placeholder="Special requirements, patient history relevant to donation…"></textarea>
+        </div>
+      </div>
+      <div class="rf-footer">
+        <button class="btn btn-blood" style="width:100%;justify-content:center;font-size:14px;padding:11px" onclick="submitReq()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 2 11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Find Matching Donors &amp; Notify Now
+        </button>
+      </div>
+    </div>
+
+    <!-- SCORE PREVIEW -->
+    <div>
+      <div class="score-prev">
+        <div style="font-size:13px;font-weight:800;margin-bottom:14px">Gemini Priority Score</div>
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#1C2638" stroke-width="7"/>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#E8001A" stroke-width="7" id="req-gauge-arc" stroke-dasharray="251" stroke-dashoffset="50" transform="rotate(-90 50 50)" stroke-linecap="round"/>
+          </svg>
+          <div class="gauge-num" id="req-gauge-num" style="color:var(--blood)">82</div>
+        </div>
+        <div style="font-size:11px;color:var(--t2);text-align:center;margin-bottom:14px">Priority score out of 100</div>
+        <div>
+          <div class="af-row"><span class="af-lbl">Blood group rarity</span><div class="af-bar"><div class="af-fill" id="af-rare" style="width:100%;background:var(--blood)"></div></div><span class="af-val" id="afv-rare">100</span></div>
+          <div class="af-row"><span class="af-lbl">Urgency level</span><div class="af-bar"><div class="af-fill" id="af-urg" style="width:100%;background:var(--blood)"></div></div><span class="af-val" id="afv-urg">100</span></div>
+          <div class="af-row"><span class="af-lbl">Patient condition</span><div class="af-bar"><div class="af-fill" style="width:90%;background:var(--rose)"></div></div><span class="af-val">90</span></div>
+          <div class="af-row"><span class="af-lbl">Time sensitivity</span><div class="af-bar"><div class="af-fill" style="width:75%;background:var(--gold)"></div></div><span class="af-val">75</span></div>
+          <div class="af-row"><span class="af-lbl">Units needed</span><div class="af-bar"><div class="af-fill" id="af-units" style="width:40%;background:var(--teal)"></div></div><span class="af-val" id="afv-units">40</span></div>
+        </div>
+        <div id="req-gem-label" class="gem-badge" style="margin-top:14px;width:fit-content">AI: Notify immediately</div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ch-title">Matched Donors Preview</div></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700"><span style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>Rajan Kumar (O−)</span><span style="font-family:var(--f-m);font-size:11px;color:var(--green)">1.8 km · Score 96</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700"><span style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>Priya Nair (O−)</span><span style="font-family:var(--f-m);font-size:11px;color:var(--green)">3.2 km · Score 88</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700"><span style="display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span>Arjun Mehta (O−)</span><span style="font-family:var(--f-m);font-size:11px;color:var(--gold)">5.1 km · Score 74</span></div>
+          <div style="font-size:11px;color:var(--t2);margin-top:3px">+ 3 more compatible donors found within 10km</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ DONOR PORTAL ══════════════ -->
+<div id="sc-donor" class="screen">
+  <div class="ph anim"><div><div class="ph-title">Donor Portal</div><div class="ph-sub">Register · Toggle availability · Help save lives</div></div>
+    <div class="ph-acts"><button class="btn btn-blood btn-sm">+ Register New Donor</button></div>
+  </div>
+  <div class="dr-layout anim a1">
+    <div class="dr-card">
+      <div class="dr-hdr">
+        <div class="dr-hdr-title">Donor Registration &amp; Availability</div>
+        <div class="dr-hdr-sub">Only available donors appear in emergency matches · Toggle availability anytime</div>
+      </div>
+      <div style="padding:22px;display:flex;flex-direction:column;gap:18px">
+        <div class="frow">
+          <div class="fg"><div class="flbl">Full Name</div><input class="finp" id="d-name" placeholder="Your full name" type="text"></div>
+          <div class="fg"><div class="flbl">Phone Number</div><input class="finp" id="d-ph" placeholder="+91 XXXXX XXXXX" type="tel"></div>
+        </div>
+        <div class="fg">
+          <div class="flbl">Your Blood Group</div>
+          <div class="bg-picker" id="donor-bg-picker">
+            <div class="bg-opt" onclick="selDonorBG(this,'O−')">O−</div>
+            <div class="bg-opt sel-bg" onclick="selDonorBG(this,'O+')">O+</div>
+            <div class="bg-opt" onclick="selDonorBG(this,'A−')">A−</div>
+            <div class="bg-opt" onclick="selDonorBG(this,'A+')">A+</div>
+            <div class="bg-opt" onclick="selDonorBG(this,'B−')">B−</div>
+            <div class="bg-opt" onclick="selDonorBG(this,'B+')">B+</div>
+            <div class="bg-opt" onclick="selDonorBG(this,'AB−')">AB−</div>
+            <div class="bg-opt" onclick="selDonorBG(this,'AB+')">AB+</div>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg"><div class="flbl">City / Area</div><input class="finp" id="d-city" placeholder="Bandra, Mumbai" type="text"></div>
+          <div class="fg"><div class="flbl">Last Donation Date</div><input class="finp" id="d-last" type="date"></div>
+        </div>
+        <div class="fg">
+          <div class="flbl">Availability Right Now</div>
+          <div class="avail-toggle" id="avail-toggle" onclick="toggleAvail()">
+            <div>
+              <div class="at-label" id="at-label">I'm Available to Donate</div>
+              <div class="at-sub" id="at-sub">You'll receive emergency notifications within your area</div>
+            </div>
+            <div class="at-switch on" id="at-switch"><div class="at-knob"></div></div>
+          </div>
+        </div>
+        <button class="btn btn-blood" style="width:100%;justify-content:center;padding:11px;font-size:14px" onclick="registerDonor()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          Register as Blood Donor
+        </button>
+      </div>
+    </div>
+
+    <!-- ACTIVE DONORS LIST -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div class="ch"><div class="ch-title">Active Donors Today</div><span class="badge bx-ok">28 online</span></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:8px" id="active-donors-list"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ch-title">Compatibility Matrix</div></div>
+        <div class="cb" style="font-size:11px;color:var(--t2);line-height:1.9">
+          <div><span style="font-family:var(--f-m);font-weight:800;color:var(--blood)">O−</span> → Can donate to <strong style="color:var(--t1)">ALL groups</strong></div>
+          <div><span style="font-family:var(--f-m);font-weight:800;color:var(--blood)">O+</span> → O+, A+, B+, AB+</div>
+          <div><span style="font-family:var(--f-m);font-weight:800;color:var(--blood)">A−</span> → A−, A+, AB−, AB+</div>
+          <div><span style="font-family:var(--f-m);font-weight:800;color:var(--blood)">A+</span> → A+, AB+</div>
+          <div><span style="font-family:var(--f-m);font-weight:800;color:var(--blood)">B−</span> → B−, B+, AB−, AB+</div>
+          <div><span style="font-family:var(--f-m);font-weight:800;color:var(--blood)">B+</span> → B+, AB+</div>
+          <div><span style="font-family:var(--f-m);font-weight:800;color:var(--blood)">AB+</span> → AB+ only</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NOTIFICATIONS / DONOR RESPONSE ══════════════ -->
+<div id="sc-notify" class="screen">
+  <div class="ph anim"><div><div class="ph-title">Donor Response Panel</div><div class="ph-sub">Live notification status · Auto-escalation flow</div></div></div>
+  <div class="g2e anim a1">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch"><div class="ch-title">Request Status — REQ-001</div><span class="badge bx-crit">CRITICAL</span></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--bg3);border-radius:10px;padding:12px;border-left:3px solid var(--blood)">
+            <div style="font-size:12px;color:var(--t2);margin-bottom:4px;font-family:var(--f-m);font-size:9px;text-transform:uppercase;letter-spacing:.08em">REQUEST DETAILS</div>
+            <div style="font-size:14px;font-weight:900">Apollo Hospital · O− · 2 units</div>
+            <div style="font-size:11px;color:var(--t2);margin-top:3px">Trauma surgery · Submitted 14:22</div>
+          </div>
+          <div class="status-flow" id="status-flow">
+            <div class="sf-step done"><div class="sf-dot" style="background:var(--green)"></div><div><div class="sf-label">Request submitted</div><div style="font-size:10px;color:var(--t2)">3 donors matched</div></div><div class="sf-time">14:22</div></div>
+            <div class="sf-step done"><div class="sf-dot" style="background:var(--green)"></div><div><div class="sf-label">Gemini scored & ranked</div><div style="font-size:10px;color:var(--t2)">Score: 97/100</div></div><div class="sf-time">14:22</div></div>
+            <div class="sf-step done"><div class="sf-dot" style="background:var(--green)"></div><div><div class="sf-label">Notifications sent</div><div style="font-size:10px;color:var(--t2)">Rajan, Priya, Arjun</div></div><div class="sf-time">14:23</div></div>
+            <div class="sf-step active" id="sf-waiting"><div class="sf-dot" style="background:var(--blood)"></div><div><div class="sf-label">Awaiting response</div><div style="font-size:10px;color:var(--t2)">Escalates in <span id="sf-esc-t">07:12</span></div></div><div class="sf-time">Now</div></div>
+            <div class="sf-step" id="sf-confirmed"><div class="sf-dot" style="background:var(--t3)"></div><div><div class="sf-label">Donor confirmed</div><div style="font-size:10px;color:var(--t2)">En route</div></div><div class="sf-time">—</div></div>
+            <div class="sf-step" id="sf-arrived"><div class="sf-dot" style="background:var(--t3)"></div><div><div class="sf-label">Donor arrived</div><div style="font-size:10px;color:var(--t2)">Blood collected</div></div><div class="sf-time">—</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ch-title">Donor Response Status</div></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:8px" id="notif-status-list"></div>
+      </div>
+    </div>
+
+    <!-- MOBILE PHONE MOCKUP -->
+    <div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:10px;font-family:var(--f-m);text-transform:uppercase;letter-spacing:.08em">Donor phone view</div>
+      <div class="mobile-frame">
+        <div class="mf-statusbar">
+          <span>BloodBridge</span>
+          <span id="mf-clock"></span>
+        </div>
+        <div class="mf-body">
+          <div class="notif-card" id="notif-card-main">
+            <div class="notif-app">🩸 BLOODBRIDGE EMERGENCY</div>
+            <div class="notif-title">URGENT: O− Blood Needed</div>
+            <div class="notif-body">Apollo Hospital, Andheri needs O− blood urgently for trauma surgery. You are 1.8km away and are the top match. Patient condition: critical.</div>
+            <div class="notif-btns">
+              <button class="nb-yes" onclick="donorRespond('yes')">✓ I'm Coming</button>
+              <button class="nb-no" onclick="donorRespond('no')">Can't Right Now</button>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--t2);text-align:center;margin-top:10px">— Donor: Rajan Kumar, O− —</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ASSIGN MODAL -->
+<div class="mo-overlay" id="assign-modal">
+  <div class="modal">
+    <div class="mo-hd"><div class="mo-title">Assign Donor to Request</div><button class="mo-close" onclick="closeModal()">×</button></div>
+    <div class="mo-body">
+      <div class="mo-req-box"><div class="mo-req-tag">REQUEST</div><div class="mo-req-name" id="mo-req-name">—</div><div class="mo-req-sub" id="mo-req-sub">—</div></div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Gemini-ranked donors — by blood compatibility, distance &amp; last donation:</div>
+      <div id="mo-donor-opts"></div>
+      <div class="mo-foot">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-blood" style="flex:1;justify-content:center" onclick="confirmAssign()">Notify &amp; Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ═══════════════════════ JS ═══════════════════════ -->
+<script>
+/* ── DATA ── */
+const DONORS = [
+  {id:'RK-004',name:'Rajan Kumar',bg:'O−',loc:'Andheri West',dist:1.8,status:'available',score:96,lastDon:'4 months ago',col:'#E8001A'},
+  {id:'PN-011',name:'Priya Nair',bg:'O−',loc:'Bandra',dist:3.2,status:'available',score:88,lastDon:'6 months ago',col:'#C0001A'},
+  {id:'AM-007',name:'Arjun Mehta',bg:'O−',loc:'Juhu',dist:5.1,status:'available',score:74,lastDon:'3 months ago',col:'#FF4D6A'},
+  {id:'SK-018',name:'Sunita Khanna',bg:'A+',loc:'Worli',dist:2.4,status:'available',score:91,lastDon:'5 months ago',col:'#FFB830'},
+  {id:'VD-022',name:'Vijay Desai',bg:'B+',loc:'Dadar',dist:3.8,status:'en-route',score:82,lastDon:'7 months ago',col:'#00D68F'},
+  {id:'MP-009',name:'Meera Pillai',bg:'AB+',loc:'Kurla',dist:6.2,status:'busy',score:65,lastDon:'2 months ago',col:'#2D8BFF'},
+  {id:'RG-015',name:'Rohit Gupta',bg:'B−',loc:'Powai',dist:7.1,status:'available',score:71,lastDon:'8 months ago',col:'#00C8CB'},
+  {id:'AS-003',name:'Aisha Sheikh',bg:'A−',loc:'Colaba',dist:9.4,status:'available',score:68,lastDon:'5 months ago',col:'#FF6B2D'},
+];
+const MAP_POS = [
+  {x:120,y:90},{x:330,y:85},{x:540,y:100},
+  {x:100,y:260},{x:330,y:250},{x:520,y:270},
+  {x:540,y:140},{x:95,y:390},
+];
+const REQS = [
+  {id:'REQ-001',pat:'Anil Sharma',hosp:'Apollo Hospital',bg:'O−',units:2,urg:'critical',score:97,status:'waiting',time:'14:22'},
+  {id:'REQ-002',pat:'Baby Girl (Neonate)',hosp:'KEM Hospital',bg:'O+',units:1,urg:'critical',score:90,status:'confirmed',time:'14:10'},
+  {id:'REQ-003',pat:'Sunita Devi',hosp:'Hinduja Hospital',bg:'AB+',units:3,urg:'high',score:75,status:'matched',time:'13:55'},
+  {id:'REQ-004',pat:'Ramesh Patel',hosp:'City General',bg:'B+',units:2,urg:'medium',score:58,status:'waiting',time:'13:30'},
+  {id:'REQ-005',pat:'Kavita Iyer',hosp:'Nanavati Hospital',bg:'A−',units:1,urg:'high',score:72,status:'matched',time:'13:15'},
+];
+const FEED_DATA = [
+  {col:'#E8001A',time:'14:34',t:'REQ-001: O− urgency upgraded',s:'Gemini raised score 82→97 · Notifying 3 donors now'},
+  {col:'#00D68F',time:'14:32',t:'Vijay Desai confirmed REQ-002',s:'En route to KEM Hospital · ETA 12 min'},
+  {col:'#FFB830',time:'14:28',t:'Auto-escalation triggered',s:'No response in 8 min · Next 2 donors notified'},
+  {col:'#E8001A',time:'14:22',t:'New critical request: REQ-001',s:'Apollo Hospital · O− · Trauma surgery · Matching now'},
+  {col:'#00D68F',time:'14:18',t:'REQ-005 fulfilled',s:'Aisha Sheikh donated · Patient stable'},
+  {col:'#2D8BFF',time:'14:10',t:'28 donors active today',s:'6 newly toggled available in last 2 hours'},
+  {col:'#00C8CB',time:'14:02',t:'12 duplicate requests removed',s:'AI dedup detected same patient submitted × 3'},
+  {col:'#E8001A',time:'13:58',t:'New request: REQ-002',s:'KEM Hospital · O+ · Neonatal emergency'},
+];
+const BG_AVAIL = {
+  'O−':{count:2,label:'CRITICAL LOW'},'O+':{count:8,label:'Available'},'A−':{count:3,label:'Low'},
+  'A+':{count:6,label:'Available'},'B−':{count:2,label:'Low'},'B+':{count:5,label:'Available'},
+  'AB−':{count:1,label:'Very Low'},'AB+':{count:4,label:'Available'}
+};
+
+/* ── NAV ── */
+function nav(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tn-btn,.sb-item').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sc-'+id).classList.add('on');
+  document.querySelectorAll('.tn-btn,.sb-item').forEach(b=>{
+    const oc=b.getAttribute('onclick')||'';
+    if(oc.includes("'"+id+"'")) b.classList.add('on');
+  });
+  if(id==='map') renderMap();
+  if(id==='notify') startEscTimer();
+  window.scrollTo(0,0);
+}
+
+/* ── CLOCK ── */
+function tick(){
+  const n=new Date();
+  const s=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  const d=document.getElementById('dash-clock');
+  const m=document.getElementById('mf-clock');
+  if(d)d.textContent=s+' IST';
+  if(m)m.textContent=s;
+}
+setInterval(tick,1000);tick();
+
+/* ── REQUESTS TABLE ── */
+const URGCOL={critical:'var(--blood)',high:'#FF6B2D',medium:'var(--gold)'};
+const URGBC={critical:'bx-crit',high:'bx-high',medium:'bx-med'};
+const STBC={waiting:'bx-crit',confirmed:'bx-ok',matched:'bx-wait',fulfilled:'bx-done'};
+
+function renderReqs(){
+  document.getElementById('dash-req-body').innerHTML=REQS.map((r,i)=>{
+    const c=URGCOL[r.urg];
+    return `<div class="req-row" onclick="openAssign('${r.id}')">
+      <div class="req-id">${r.id}</div>
+      <div><div class="req-name">${r.pat}</div><div class="req-sub">${r.hosp}</div></div>
+      <div><span class="blood-tag">${r.bg}</span></div>
+      <div style="font-family:var(--f-m);font-size:13px;font-weight:700">${r.units}u</div>
+      <div class="score-bar">
+        <span class="sc-num" style="color:${c}">${r.score}</span>
+        <div class="sc-bg"><div class="sc-fill" style="width:${r.score}%;background:${c}"></div></div>
+      </div>
+      <div><span class="badge ${STBC[r.status]||'bx-wait'}">${r.status.toUpperCase()}</span></div>
+    </div>`;
+  }).join('');
+}
+
+/* ── FEED ── */
+function renderFeed(){
+  document.getElementById('dash-feed').innerHTML=FEED_DATA.map(f=>`
+    <div class="feed-item">
+      <div class="fd-col"><div class="fd-dot" style="background:${f.col}"></div><div class="fd-line"></div></div>
+      <div class="fd-time">${f.time}</div>
+      <div class="fd-body"><div class="fd-title">${f.t}</div><div class="fd-sub">${f.s}</div></div>
+    </div>`).join('');
+}
+
+/* ── BLOOD GROUP AVAILABILITY ── */
+function renderCompatGrid(){
+  document.getElementById('compat-grid').innerHTML=Object.entries(BG_AVAIL).map(([bg,d])=>`
+    <div class="compat-cell ${d.count<=2?'crit-lack':''}">
+      <div class="compat-type">${bg}</div>
+      <div class="compat-avail">${d.count} available · ${d.label}</div>
+      <div class="compat-bar"><div class="compat-fill" style="width:${Math.min(d.count/10*100,100)}%"></div></div>
+    </div>`).join('');
+}
+
+/* ── SIDEBAR BLOOD ── */
+function renderSBBlood(){
+  document.getElementById('sb-blood-avail').innerHTML=Object.entries(BG_AVAIL).map(([bg,d])=>`
+    <div class="sbb-cell ${d.count<=2?'urgent':''}">
+      <div class="sbb-type">${bg}</div>
+      <div class="sbb-count">${d.count}</div>
+    </div>`).join('');
+}
+
+/* ── ACTIVE DONORS LIST ── */
+function renderActiveDonors(){
+  const el=document.getElementById('active-donors-list');
+  if(!el)return;
+  el.innerHTML=DONORS.filter(d=>d.status==='available').slice(0,5).map(d=>`
+    <div style="display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--b)">
+      <div style="width:34px;height:34px;border-radius:50%;background:${d.col}22;color:${d.col};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0">${d.name.split(' ').map(n=>n[0]).join('')}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700">${d.name}</div>
+        <div style="font-size:10px;color:var(--t2)">${d.loc} · Last: ${d.lastDon}</div>
+      </div>
+      <span class="blood-tag" style="font-size:11px;padding:3px 7px">${d.bg}</span>
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
+    </div>`).join('');
+}
+
+/* ── MAP ── */
+function renderMap(){
+  const g=document.getElementById('map-markers');
+  if(!g)return;
+  const scol={available:'#00D68F','en-route':'#E8001A',busy:'#FFB830'};
+  let html='';
+  // Hospital marker
+  html+=`<g>
+    <circle cx="330" cy="195" r="14" fill="#2D8BFF20" stroke="#2D8BFF" stroke-width="2"/>
+    <circle cx="330" cy="195" r="6" fill="#2D8BFF"/>
+    <text x="330" y="218" fill="#2D8BFF" font-size="8.5" font-family="Geist Mono,monospace" text-anchor="middle" font-weight="700">APOLLO HSP</text>
+  </g>`;
+  // Radius circle
+  html+=`<circle cx="330" cy="195" r="85" fill="none" stroke="#E8001A" stroke-width="1" stroke-dasharray="4,4" opacity=".3"/>`;
+  DONORS.forEach((d,i)=>{
+    const pos=MAP_POS[i]||{x:200+i*50,y:200};
+    const c=scol[d.status]||'#00D68F';
+    const pulse=d.bg==='O−'?'class="mark-pulse"':'';
+    html+=`<g style="cursor:pointer" onclick="selDonorOnMap('${d.id}')" onmouseenter="showMapTip(event,'${d.name}','${d.bg}','${d.status}','${d.dist} km',${d.score},'${d.lastDon}')" onmouseleave="hideTip()">
+      <circle cx="${pos.x}" cy="${pos.y}" r="20" fill="${c}10" stroke="${c}" stroke-width="1" ${pulse}/>
+      <circle cx="${pos.x}" cy="${pos.y}" r="10" fill="${c}30" stroke="${c}" stroke-width="2"/>
+      <circle cx="${pos.x}" cy="${pos.y}" r="5" fill="${c}"/>
+      <text x="${pos.x}" y="${pos.y-14}" fill="${c}" font-size="8" font-family="Geist Mono,monospace" text-anchor="middle" font-weight="700">${d.bg}</text>
+      <text x="${pos.x}" y="${pos.y+23}" fill="${c}" font-size="7.5" font-family="Geist Mono,monospace" text-anchor="middle">${d.dist}km</text>
+    </g>`;
+  });
+  g.innerHTML=html;
+
+  // Donor cards list
+  const cl=document.getElementById('map-donor-list');
+  if(!cl)return;
+  const stcol={available:'dc-avail',busy:'dc-busy','en-route':'dc-coming'};
+  const stlbl={available:'Available',busy:'Busy','en-route':'En Route'};
+  cl.innerHTML=DONORS.map(d=>`
+    <div class="donor-card ${stcol[d.status]||'dc-avail'}" id="dc-${d.id}" onclick="selDonorOnMap('${d.id}')">
+      <div class="dc-top">
+        <div><div class="dc-name">${d.name}</div><div class="dc-loc">${d.id} · ${d.loc}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="blood-tag" style="font-size:11px;padding:3px 7px">${d.bg}</span>
+          <span class="badge ${d.status==='available'?'bx-ok':d.status==='en-route'?'bx-crit':'bx-med'}">${(stlbl[d.status]||'').toUpperCase()}</span>
+        </div>
+      </div>
+      <div class="dc-meta"><span>📍 ${d.dist} km away</span><span>🩸 ${d.lastDon}</span></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <span style="font-size:10px;color:var(--t3);font-family:var(--f-m)">MATCH</span>
+        <div style="flex:1;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden"><div style="width:${d.score}%;height:100%;background:var(--blood);border-radius:2px"></div></div>
+        <span style="font-family:var(--f-m);font-size:12px;font-weight:800;color:var(--blood)">${d.score}</span>
+      </div>
+      <div class="dc-btns">
+        ${d.status==='available'?`<button class="btn btn-blood btn-xs" onclick="event.stopPropagation();openAssign('REQ-001','${d.id}')">Notify Donor</button>`:''}
+        <button class="btn btn-ghost btn-xs">Profile</button>
+      </div>
+    </div>`).join('');
+}
+
+function selDonorOnMap(id){
+  document.querySelectorAll('.donor-card').forEach(c=>c.classList.remove('sel'));
+  const el=document.getElementById('dc-'+id);
+  if(el){el.classList.add('sel');el.scrollIntoView({behavior:'smooth',block:'nearest'})}
+}
+function showMapTip(e,name,bg,st,dist,sc,last){
+  const tip=document.getElementById('map-tip');
+  const canvas=document.getElementById('map-canvas');
+  const rect=canvas.getBoundingClientRect();
+  const x=e.clientX-rect.left+12,y=e.clientY-rect.top-10;
+  tip.style.left=Math.min(x,rect.width-200)+'px';
+  tip.style.top=y+'px';
+  document.getElementById('mt-name').textContent=name;
+  document.getElementById('mt-bg').textContent=bg;
+  document.getElementById('mt-st').textContent=st.toUpperCase();
+  document.getElementById('mt-dist').textContent=dist;
+  document.getElementById('mt-sc').textContent=sc+'/100';
+  document.getElementById('mt-last').textContent=last;
+  tip.classList.add('vis');
+}
+function hideTip(){document.getElementById('map-tip').classList.remove('vis')}
+
+/* ── ESCALATION TIMER ── */
+let escSec=7*60+24;let escInt=null;
+function startEscTimer(){
+  if(escInt)clearInterval(escInt);
+  escInt=setInterval(()=>{
+    if(escSec>0){escSec--;}
+    else{escSec=0;showToast('warning','Auto-escalation triggered','Next batch of donors notified automatically')}
+    const m=Math.floor(escSec/60),s=escSec%60;
+    const ts=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    const el=document.getElementById('esc-timer');
+    const el2=document.getElementById('sf-esc-t');
+    if(el)el.textContent=ts;
+    if(el2)el2.textContent=ts;
+  },1000);
+}
+function resetTimer(){escSec=8*60;showToast('info','Timer reset','Escalation timer restarted at 8:00')}
+
+/* ── REQ FORM SCORE ── */
+let selBGVal='O−',selUrgVal='critical';
+function selBG(el,bg){
+  document.querySelectorAll('#bg-picker .bg-opt').forEach(o=>o.classList.remove('sel-bg'));
+  el.classList.add('sel-bg');selBGVal=bg;updateReqScore();
+}
+function selDonorBG(el,bg){
+  document.querySelectorAll('#donor-bg-picker .bg-opt').forEach(o=>o.classList.remove('sel-bg'));
+  el.classList.add('sel-bg');
+}
+function setUrg(u){
+  selUrgVal=u;
+  document.getElementById('u-critical').className='urg-opt'+(u==='critical'?' uc':'');
+  document.getElementById('u-high').className='urg-opt'+(u==='high'?' uh':'');
+  document.getElementById('u-medium').className='urg-opt'+(u==='medium'?' um':'');
+  updateReqScore();
+}
+const BG_RARITY={'O−':100,'B−':85,'AB−':80,'A−':75,'O+':50,'B+':40,'A+':35,'AB+':20};
+function updateReqScore(){
+  const rare=BG_RARITY[selBGVal]||50;
+  const urgS=selUrgVal==='critical'?100:selUrgVal==='high'?65:35;
+  const units=parseInt(document.getElementById('f-units')?.value)||1;
+  const unitS=Math.min(units*20,80);
+  const score=Math.round(.30*rare+.30*urgS+.20*90+.10*75+.10*(unitS/2));
+  const clipped=Math.min(Math.max(score,10),99);
+  document.getElementById('req-gauge-num').textContent=clipped;
+  const c=clipped>=80?'var(--blood)':clipped>=60?'#FF6B2D':'var(--gold)';
+  document.getElementById('req-gauge-num').style.color=c;
+  const arc=document.getElementById('req-gauge-arc');
+  arc.setAttribute('stroke-dashoffset',251-(clipped/100)*251);
+  arc.setAttribute('stroke',c);
+  document.getElementById('af-rare').style.width=rare+'%';
+  document.getElementById('afv-rare').textContent=rare;
+  document.getElementById('af-urg').style.width=urgS+'%';
+  document.getElementById('afv-urg').textContent=urgS;
+  document.getElementById('af-units').style.width=unitS+'%';
+  document.getElementById('afv-units').textContent=unitS;
+  const lbl=document.getElementById('req-gem-label');
+  lbl.textContent=clipped>=80?'AI: Notify immediately':clipped>=60?'AI: High priority — notify top 3':'AI: Standard priority';
+}
+
+function submitReq(){
+  const hosp=document.getElementById('f-hosp').value||'Hospital';
+  const bg=selBGVal;
+  const score=parseInt(document.getElementById('req-gauge-num').textContent)||80;
+  FEED_DATA.unshift({col:'#E8001A',time:'Now',t:`New ${selUrgVal.toUpperCase()} request: ${bg}`,s:`${hosp} · Matched 3 donors · Score ${score}/100`});
+  renderFeed();
+  showToast('success','✓ Donors Notified',`3 ${bg} donors within 5km notified instantly`);
+  setTimeout(()=>showToast('success','Rajan Kumar responded','I\'m coming — ETA 12 minutes'),2500);
+  nav('notify');
+}
+
+/* ── DONOR REGISTER ── */
+let donorAvail=true;
+function toggleAvail(){
+  donorAvail=!donorAvail;
+  document.getElementById('at-switch').className='at-switch'+(donorAvail?' on':'');
+  document.getElementById('at-label').textContent=donorAvail?'I\'m Available to Donate':'Marked as Unavailable';
+  document.getElementById('at-sub').textContent=donorAvail?'You\'ll receive emergency notifications within your area':'You won\'t receive notifications until you toggle back on';
+}
+function registerDonor(){
+  const name=document.getElementById('d-name').value||'New Donor';
+  showToast('success',`${name} registered!`,'You\'ll receive notifications for matching emergency requests');
+}
+
+/* ── NOTIFICATION FLOW ── */
+const NOTIF_DONORS=[
+  {name:'Rajan Kumar',bg:'O−',dist:'1.8km',status:'notified',id:'nd1'},
+  {name:'Priya Nair',bg:'O−',dist:'3.2km',status:'notified',id:'nd2'},
+  {name:'Arjun Mehta',bg:'O−',dist:'5.1km',status:'pending',id:'nd3'},
+];
+function renderNotifStatus(){
+  const el=document.getElementById('notif-status-list');
+  if(!el)return;
+  el.innerHTML=NOTIF_DONORS.map(d=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:10px">
+      <span class="blood-tag" style="font-size:11px;padding:3px 7px">${d.bg}</span>
+      <div style="flex:1"><div style="font-size:12px;font-weight:700">${d.name}</div><div style="font-size:10px;color:var(--t2)">${d.dist} away</div></div>
+      <span class="badge ${d.status==='confirmed'?'bx-ok':d.status==='declined'?'bx-crit':'bx-wait'}">${d.status.toUpperCase()}</span>
+    </div>`).join('');
+}
+function donorRespond(resp){
+  const card=document.getElementById('notif-card-main');
+  if(resp==='yes'){
+    NOTIF_DONORS[0].status='confirmed';
+    card.innerHTML=`<div class="notif-app">🩸 BLOODBRIDGE</div><div class="notif-title" style="color:var(--green)">✓ Confirmed! Thank you.</div><div class="notif-body">You've confirmed donation at Apollo Hospital. Here's your route and contact: Dr. Sharma — +91 98XXX XXXXX. The hospital has been notified you're on your way.</div><div style="margin-top:10px;padding:10px;background:var(--green2);border-radius:9px;font-size:12px;color:var(--green);font-weight:700">ETA: ~12 minutes</div>`;
+    document.getElementById('sf-waiting').className='sf-step done';
+    document.getElementById('sf-waiting').querySelector('.sf-dot').style.background='var(--green)';
+    document.getElementById('sf-waiting').querySelector('.sf-label').textContent='Response received';
+    document.getElementById('sf-confirmed').className='sf-step active';
+    document.getElementById('sf-confirmed').querySelector('.sf-dot').style.background='var(--blood)';
+    document.getElementById('sf-confirmed').querySelector('.sf-label').textContent='Rajan Kumar confirmed';
+    document.getElementById('sf-confirmed').querySelector('.sf-time').textContent='Now';
+    FEED_DATA.unshift({col:'#00D68F',time:'Now',t:'Rajan Kumar confirmed REQ-001',s:'En route to Apollo Hospital · ETA 12 min'});
+    renderFeed();
+    showToast('success','🩸 Donor Confirmed!','Rajan Kumar is en route — ETA 12 minutes');
+  }else{
+    NOTIF_DONORS[0].status='declined';
+    NOTIF_DONORS[1].status='notified';
+    card.innerHTML=`<div class="notif-app">🩸 BLOODBRIDGE EMERGENCY</div><div class="notif-title">URGENT: O− Blood Needed</div><div class="notif-body">Apollo Hospital, Andheri needs O− blood. You are 3.2km away. Previous donor unavailable.</div><div class="notif-btns"><button class="nb-yes" onclick="donorRespond('yes')">✓ I'm Coming</button><button class="nb-no" onclick="donorRespond('no')">Can't Right Now</button></div>`;
+    document.querySelector('.mf-body div:last-child').textContent='— Donor: Priya Nair, O− (auto-escalated) —';
+    showToast('warning','Escalating to next donor','Priya Nair notified automatically');
+  }
+  renderNotifStatus();
+}
+
+/* ── ASSIGN MODAL ── */
+let curReqId=null;
+function openAssign(reqId,donorId){
+  curReqId=reqId;
+  const r=REQS.find(r=>r.id===reqId);
+  document.getElementById('mo-req-name').textContent=r?`${r.id} — ${r.pat} (${r.bg})`:reqId;
+  document.getElementById('mo-req-sub').textContent=r?`${r.hosp} · ${r.units} units · ${r.urg.toUpperCase()}`:reqId;
+  const avail=DONORS.filter(d=>d.status==='available').slice(0,3);
+  document.getElementById('mo-donor-opts').innerHTML=avail.map(d=>`
+    <div class="mo-donor-opt ${donorId===d.id?'sel':''}" onclick="this.parentElement.querySelectorAll('.mo-donor-opt').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')">
+      <div class="mo-av" style="background:${d.col}22;color:${d.col}">${d.name.split(' ').map(n=>n[0]).join('')}</div>
+      <div><div class="mo-dn">${d.name} <span style="font-family:var(--f-m);font-size:10px;color:var(--blood)">${d.bg}</span></div><div class="mo-ds">${d.loc} · ${d.dist} km · ${d.lastDon}</div></div>
+      <div class="mo-score"><span class="mo-sv">${d.score}%</span></div>
+    </div>`).join('');
+  document.getElementById('assign-modal').classList.add('op');
+}
+function closeModal(){document.getElementById('assign-modal').classList.remove('op')}
+function confirmAssign(){
+  closeModal();
+  FEED_DATA.unshift({col:'#00D68F',time:'Now',t:`Donor assigned to ${curReqId}`,s:'Notification sent · Awaiting response'});
+  renderFeed();
+  showToast('success','✓ Donor Notified','Push notification sent · Awaiting confirmation');
+}
+
+/* ── THEME ── */
+function toggleTheme(){
+  const h=document.documentElement;
+  const dk=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',dk?'light':'dark');
+  showToast('info',dk?'☀ Light mode':'🌙 Dark mode','Theme updated');
+}
+
+/* ── TOAST ── */
+function showToast(type,title,desc){
+  const cm={success:'#00D68F',error:'#E8001A',info:'#2D8BFF',warning:'#FFB830'};
+  const c=cm[type]||cm.info;
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<div class="t-ico" style="background:${c}1A;color:${c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="t-title">${title}</div><div class="t-desc">${desc||''}</div></div>`;
+  wrap.appendChild(el);
+  setTimeout(()=>el.classList.add('vis'),10);
+  setTimeout(()=>{el.classList.remove('vis');setTimeout(()=>el.remove(),300)},4000);
+}
+
+/* ── LIVE SIM ── */
+const SIM_MSGS=[
+  ['#00D68F','Priya Nair toggled available','O− donor active in Bandra'],
+  ['#E8001A','O− stock critically low','Only 2 donors available · Alert hospitals'],
+  ['#FFB830','Auto-escalation triggered','No response in 8 min · Next donor notified'],
+  ['#2D8BFF','AI dedup: 2 requests merged','Same patient submitted twice · Deduplicated'],
+  ['#00C8CB','Vijay Desai donation complete','REQ-003 fulfilled · Blood collected'],
+];
+setInterval(()=>{
+  const m=SIM_MSGS[Math.floor(Math.random()*SIM_MSGS.length)];
+  const n=new Date();
+  const t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  FEED_DATA.unshift({col:m[0],time:t,t:m[1],s:m[2]});
+  if(FEED_DATA.length>14)FEED_DATA.pop();
+  if(document.getElementById('sc-dash').classList.contains('on'))renderFeed();
+},24000);
+
+/* ── INIT ── */
+renderReqs();
+renderFeed();
+renderCompatGrid();
+renderSBBlood();
+renderActiveDonors();
+renderNotifStatus();
+startEscTimer();
+</script>
+</body>
+</html>
