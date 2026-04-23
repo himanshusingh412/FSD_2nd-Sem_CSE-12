@@ -554,7 +554,7 @@ body{
       <div class="ph-sub">City Medical Emergency Network · <span id="dash-clock" style="font-family:var(--f-m)"></span> · <span style="color:var(--blood)">3 critical requests active</span></div>
     </div>
     <div class="ph-acts">
-      <button class="btn btn-ghost btn-sm">Export Report</button>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('info', 'Report Generated', 'Exporting CSV report to downloads')">Export Report</button>
       <button class="btn btn-blood btn-sm" onclick="nav('req')">+ New Request</button>
     </div>
   </div>
@@ -659,8 +659,8 @@ body{
   <div class="ph anim">
     <div><div class="ph-title">Live Donor Map</div><div class="ph-sub">Real-time donor locations · Availability-filtered · Mumbai metro area</div></div>
     <div class="ph-acts">
-      <button class="btn btn-ghost btn-sm">Filter Blood Group</button>
-      <button class="btn btn-blood btn-sm">Notify All Nearby</button>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('info', 'Filters applied', 'Showing only relevant blood groups')">Filter Blood Group</button>
+      <button class="btn btn-blood btn-sm" onclick="showToast('success', 'Alert Sent', 'Notified all available donors within 5km radius')">Notify All Nearby</button>
     </div>
   </div>
   <div class="map-layout anim a1">
@@ -829,7 +829,7 @@ body{
 <!-- ══════════════ DONOR PORTAL ══════════════ -->
 <div id="sc-donor" class="screen">
   <div class="ph anim"><div><div class="ph-title">Donor Portal</div><div class="ph-sub">Register · Toggle availability · Help save lives</div></div>
-    <div class="ph-acts"><button class="btn btn-blood btn-sm">+ Register New Donor</button></div>
+    <div class="ph-acts"><button class="btn btn-blood btn-sm" onclick="document.getElementById('d-name').focus(); showToast('info', 'Registration', 'Fill out the form below to register')">+ Register New Donor</button></div>
   </div>
   <div class="dr-layout anim a1">
     <div class="dr-card">
@@ -1156,7 +1156,7 @@ function renderMap(){
       </div>
       <div class="dc-btns">
         ${d.status==='available'?`<button class="btn btn-blood btn-xs" onclick="event.stopPropagation();openAssign('REQ-001','${d.id}')">Notify Donor</button>`:''}
-        <button class="btn btn-ghost btn-xs">Profile</button>
+        <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();showToast('info', 'Viewing Profile', 'Opening donor profile panel...')">Profile</button>
       </div>
     </div>`).join('');
 }
