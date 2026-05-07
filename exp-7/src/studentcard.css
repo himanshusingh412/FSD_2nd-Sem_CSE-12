@@ -1,0 +1,14 @@
+body {
+  background-color: #082042;
+}
+.student-card {
+  font-family: 'Outfit', sans-serif;
+  background-color: #43596f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 16px;
+  width: 280px;
+  color: #dfcec4;
+}
+
