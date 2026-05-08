@@ -14,7 +14,7 @@ function App() {
 export default App; */
 
 
-import react from "react"; 
+/*import react from "react"; 
 import{ useState } from "react";
 
 function App() {
@@ -28,4 +28,5 @@ function App() {
     </div>
   );
 }
-export default App;
+export default App; */
+
