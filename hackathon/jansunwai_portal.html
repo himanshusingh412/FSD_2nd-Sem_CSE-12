@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jansunwai Portal 2.0 — Citizen Grievance Redressal System</title>
+  <meta name="description" content="File and track grievances online. Real-time status tracking, SLA enforcement, and AI-powered routing.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="app.toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="logo">🏛️</span>
+      <div>
+        <span class="brand-text">Jansunwai</span>
+        <span class="brand-sub">Grievance Portal 2.0</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" onclick="app.logout()" style="color:var(--danger);">
+        <span class="icon">🚪</span> Logout
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="topbar-icon-btn menu-toggle" onclick="app.toggleSidebar()">☰</button>
+      <div class="topbar-search">
+        <span>🔍</span>
+        <input type="text" placeholder="Search grievances..." id="globalSearch" oninput="app.handleSearch(this.value)">
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-icon-btn" onclick="app.toggleTheme()" id="themeBtn" title="Toggle theme">🌙</button>
+      <button class="topbar-icon-btn" onclick="app.toggleNotifPanel()" id="notifBtn">
+        🔔 <span class="notif-badge" id="notifCount">0</span>
+      </button>
+      <div class="user-pill" id="userPill" onclick="app.navigateTo('profile')">
+        <div class="user-avatar" id="userAvatar">C</div>
+        <div class="user-info">
+          <span class="name" id="userName">User</span>
+          <span class="role" id="userRole">Citizen</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NOTIFICATION PANEL -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+      <h3>Notifications</h3>
+      <button class="btn btn-ghost btn-sm" onclick="app.clearNotifications()">Clear all</button>
+    </div>
+    <div class="notif-list" id="notifList"></div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="mainContent">
+
+    <!-- ===== LOGIN VIEW ===== -->
+    <div id="view-login" class="login-page">
+      <div class="login-card animate-in">
+        <div class="login-logo">🏛️</div>
+        <div class="login-title">Jansunwai Portal</div>
+        <div class="login-sub">Citizen Grievance Redressal System — UP Govt.</div>
+        <div id="login-step-1">
+          <div class="form-group" style="text-align:left;">
+            <label>Mobile Number</label>
+            <input type="tel" id="loginMobile" class="form-control" placeholder="Enter 10-digit mobile" value="9876543210" maxlength="10">
+          </div>
+          <div class="form-group" style="text-align:left;">
+            <label>Login As (Demo)</label>
+            <select id="loginRole" class="form-control">
+              <option value="citizen">👤 Citizen — File & Track</option>
+              <option value="officer">👮 Officer — Manage & Resolve</option>
+              <option value="admin">🛡️ Admin — Analytics & Config</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-lg" style="width:100%;" onclick="app.sendOTP()">Get OTP →</button>
+        </div>
+        <div id="login-step-2" class="hidden">
+          <div class="form-group" style="text-align:left;">
+            <label>Enter OTP</label>
+            <input type="text" id="loginOTP" class="form-control otp-input" placeholder="• • • •" value="1234" maxlength="4">
+          </div>
+          <button class="btn btn-primary btn-lg" style="width:100%;" onclick="app.verifyOTP()">Verify & Login</button>
+          <button class="btn btn-outline mt-4" style="width:100%;" onclick="app.resetLogin()">← Back</button>
+        </div>
+        <div style="margin-top:24px;font-size:12px;color:var(--text-muted);">🔒 Secured with end-to-end encryption</div>
+      </div>
+    </div>
+
+    <!-- ===== CITIZEN DASHBOARD ===== -->
+    <div id="view-citizen-dashboard" class="hidden animate-in">
+      <div class="page-header flex justify-between items-center">
+        <div>
+          <h1 id="citizenWelcome">Welcome, Citizen</h1>
+          <p>Track and manage your grievances</p>
+        </div>
+        <button class="btn btn-primary" onclick="app.openModal('modalNewComplaint')">+ Register Grievance</button>
+      </div>
+      <div class="stat-grid" id="citizenStats"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>My Grievances</h3>
+          <select class="form-control" style="width:180px;" id="citizenFilter" onchange="app.renderCitizenDashboard()">
+            <option value="all">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Escalated">Escalated</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th>ID</th><th>Category</th><th>Date</th><th>Priority</th><th>Status</th><th>Action</th>
+          </tr></thead><tbody id="citizenTableBody"></tbody></table>
+        </div>
+        <div id="citizenEmpty" class="empty-state hidden">
+          <div class="icon">📭</div>
+          <h3>No grievances yet</h3>
+          <p>Click "Register Grievance" to file your first complaint</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== OFFICER DASHBOARD ===== -->
+    <div id="view-officer-dashboard" class="hidden animate-in">
+      <div class="page-header flex justify-between items-center">
+        <div>
+          <h1 id="officerWelcome">Officer Dashboard</h1>
+          <p>Manage and resolve assigned grievances</p>
+        </div>
+        <button class="btn btn-outline" onclick="app.simulateDay()">⏱ Simulate +1 Day (SLA Test)</button>
+      </div>
+      <div class="stat-grid" id="officerStats"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Grievance Queue</h3>
+          <div class="flex gap-2">
+            <select class="form-control" style="width:160px;" id="officerFilter" onchange="app.renderOfficerDashboard()">
+              <option value="all">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Escalated">Escalated</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+            <select class="form-control" style="width:160px;" id="officerPriorityFilter" onchange="app.renderOfficerDashboard()">
+              <option value="all">All Priority</option>
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th>ID</th><th>Citizen</th><th>Category</th><th>SLA</th><th>Priority</th><th>Status</th><th>Action</th>
+          </tr></thead><tbody id="officerTableBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN ANALYTICS ===== -->
+    <div id="view-admin-dashboard" class="hidden animate-in">
+      <div class="page-header">
+        <h1>Analytics Dashboard</h1>
+        <p>System-wide grievance analytics and performance metrics</p>
+      </div>
+      <div class="stat-grid" id="adminStats"></div>
+      <div class="chart-grid">
+        <div class="chart-card"><h4>Status Distribution</h4><canvas id="chartStatus"></canvas></div>
+        <div class="chart-card"><h4>Category Breakdown</h4><canvas id="chartCategory"></canvas></div>
+        <div class="chart-card"><h4>Priority Levels</h4><canvas id="chartPriority"></canvas></div>
+        <div class="chart-card"><h4>Weekly Trends</h4><canvas id="chartTrend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>All Grievances (System-wide)</h3>
+          <button class="btn btn-outline btn-sm" onclick="app.simulateDay()">⏱ +1 Day</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th>ID</th><th>Citizen</th><th>Category</th><th>Officer</th><th>Priority</th><th>Status</th><th>Level</th>
+          </tr></thead><tbody id="adminTableBody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROFILE VIEW ===== -->
+    <div id="view-profile" class="hidden animate-in">
+      <div class="page-header"><h1>My Profile</h1><p>Account details and preferences</p></div>
+      <div class="card" style="max-width:600px;">
+        <div class="flex gap-4 items-center mb-4">
+          <div class="user-avatar" style="width:64px;height:64px;font-size:24px;" id="profileAvatar">C</div>
+          <div>
+            <div style="font-size:20px;font-weight:700;" id="profileName">User</div>
+            <div style="font-size:13px;color:var(--text-muted);" id="profileRole">Citizen</div>
+          </div>
+        </div>
+        <div class="info-block"><div class="info-label">Phone</div><div class="info-value" id="profilePhone">—</div></div>
+        <div class="info-block"><div class="info-label">District</div><div class="info-value" id="profileDistrict">—</div></div>
+        <div class="info-block"><div class="info-label">Total Complaints Filed</div><div class="info-value" id="profileTotal">0</div></div>
+        <div class="info-block"><div class="info-label">Member Since</div><div class="info-value" id="profileSince">—</div></div>
+      </div>
+    </div>
+
+    <!-- ===== NOTIFICATIONS VIEW ===== -->
+    <div id="view-notifications" class="hidden animate-in">
+      <div class="page-header"><h1>Notification Center</h1><p>All SMS and system alerts</p></div>
+      <div class="card" id="notifFullList"></div>
+    </div>
+
+  </main>
+
+  <!-- ===== MODAL: NEW COMPLAINT ===== -->
+  <div class="modal-overlay" id="modalNewComplaint">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <h3>Register New Grievance</h3>
+        <button class="close-btn" onclick="app.closeModal('modalNewComplaint')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="formNewComplaint" onsubmit="app.submitComplaint(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Department / Category</label>
+              <select id="ncCategory" class="form-control" required onchange="app.updateSubcategories()">
+                <option value="">Select Department</option>
+                <option value="Electricity">⚡ Electricity (UPPCL)</option>
+                <option value="Water">💧 Water Supply (Jal Nigam)</option>
+                <option value="Police">🚔 Police & Law/Order</option>
+                <option value="Revenue">📜 Revenue & Land</option>
+                <option value="Municipal">🏗️ Municipal / Sanitation</option>
+                <option value="Health">🏥 Health & Medical</option>
+                <option value="Education">📚 Education</option>
+                <option value="Transport">🚌 Transport & Roads</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sub-Category</label>
+              <select id="ncSubcategory" class="form-control" required>
+                <option value="">Select Sub-Category</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>District</label>
+              <select id="ncDistrict" class="form-control" required>
+                <option value="Lucknow">Lucknow</option><option value="Kanpur">Kanpur</option>
+                <option value="Varanasi">Varanasi</option><option value="Agra">Agra</option>
+                <option value="Prayagraj">Prayagraj</option><option value="Noida">Noida</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Block / Ward</label>
+              <input type="text" id="ncWard" class="form-control" placeholder="e.g. Ward 42" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Grievance Description</label>
+            <textarea id="ncDesc" class="form-control" rows="4" placeholder="Describe the issue in detail..." required></textarea>
+            <div class="form-hint">💡 AI auto-detects urgency from keywords (emergency, fire, no water, accident)</div>
+          </div>
+          <div class="form-group">
+            <label>Attach Evidence (Optional)</label>
+            <input type="file" class="form-control" accept="image/*,.pdf">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="app.closeModal('modalNewComplaint')">Cancel</button>
+        <button class="btn btn-primary" onclick="document.getElementById('formNewComplaint').requestSubmit()">Submit Grievance</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: COMPLAINT DETAILS ===== -->
+  <div class="modal-overlay" id="modalDetail">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3 id="cdId">JAN-XXXX</h3>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;" id="cdMeta">Registered on: ...</div>
+        </div>
+        <button class="close-btn" onclick="app.closeModal('modalDetail')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div>
+            <div class="flex gap-2 mb-4">
+              <span id="cdStatus" class="badge badge-pending">Pending</span>
+              <span id="cdPriority" class="badge badge-medium">Medium</span>
+              <span id="cdLevel" class="badge badge-closed">Level 1</span>
+            </div>
+            <div class="info-block">
+              <div class="info-label">Citizen</div>
+              <div class="info-value" id="cdCitizen">—</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;" id="cdLocation">—</div>
+            </div>
+            <div class="info-block">
+              <div class="info-label">Category</div>
+              <div class="info-value" id="cdCategory">—</div>
+            </div>
+            <div class="info-block">
+              <div class="info-label">Description</div>
+              <div style="font-size:13px;line-height:1.6;" id="cdDesc">—</div>
+            </div>
+            <div class="info-block">
+              <div class="info-label">Assigned Officer</div>
+              <div class="info-value" id="cdOfficer">—</div>
+            </div>
+
+            <!-- OFFICER ACTIONS -->
+            <div id="officerActions" class="hidden" style="margin-top:16px;">
+              <h4 class="mb-2">Officer Actions</h4>
+              <div class="form-group">
+                <label>Update Status</label>
+                <select id="cdActionStatus" class="form-control">
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Resolved">Resolved</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Remarks / Resolution Note</label>
+                <textarea id="cdActionNote" class="form-control" rows="3" placeholder="Action taken..."></textarea>
+              </div>
+              <button class="btn btn-primary" onclick="app.saveOfficerAction()">💾 Save Update</button>
+            </div>
+
+            <!-- CITIZEN FEEDBACK -->
+            <div id="citizenFeedback" class="hidden feedback-box">
+              <h4>📋 Resolution Feedback</h4>
+              <p style="font-size:13px;margin-bottom:12px;">Officer marked this as resolved. Are you satisfied?</p>
+              <div class="flex gap-3">
+                <button class="btn btn-success" onclick="app.submitFeedback('yes')">✅ Yes, Close it</button>
+                <button class="btn btn-danger" onclick="app.submitFeedback('no')">🔄 No, Reopen</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TIMELINE -->
+          <div>
+            <h4 class="mb-4">📍 Tracking Timeline</h4>
+            <div class="timeline" id="cdTimeline"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
