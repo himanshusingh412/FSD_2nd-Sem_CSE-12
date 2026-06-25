@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Result System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <a href="../index.html" class="back-link">&larr; Back</a>
+    <h1>Student Result System</h1>
+    <p>Enter marks of 5 subjects to calculate percentage and result class.</p>
+    
+    <input type="number" id="sub1" placeholder="Enter Mathematics marks" min="0" max="100" step="any">
+    <input type="number" id="sub2" placeholder="Enter Physics marks" min="0" max="100" step="any">
+    <input type="number" id="sub3" placeholder="Enter Chemistry marks" min="0" max="100" step="any">
+    <input type="number" id="sub4" placeholder="Enter English marks" min="0" max="100" step="any">
+    <input type="number" id="sub5" placeholder="Enter Computer Science marks" min="0" max="100" step="any">
+    
+    <button onclick="calculateResult()">Generate Result</button>
+    <div id="result"></div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
