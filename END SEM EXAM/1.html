@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Marks & Grade Calculator</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#eaf4ff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:420px;
+    background:#fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+}
+
+h1{
+    text-align:center;
+    color:#333;
+    margin-bottom:15px;
+}
+
+p{
+    text-align:center;
+    color:#666;
+    margin-bottom:20px;
+}
+
+label{
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:10px 0 20px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:6px;
+    background:#0077ff;
+    color:white;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#005fd1;
+}
+
+#output{
+    margin-top:20px;
+    background:#f4f4f4;
+    padding:15px;
+    border-radius:8px;
+    line-height:30px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>Student Marks & Grade Calculator</h1>
+
+<p>Enter the number of subjects to calculate Total, Average, Grade and Result.</p>
+
+<label>Number of Subjects</label>
+
+<input
+type="number"
+id="subject"
+placeholder="Enter number of subjects">
+
+<button onclick="calculate()">Calculate Result</button>
+
+<div id="output"></div>
+
+</div>
+
+<script>
+
+function calculate(){
+
+    // Get number of subjects
+    var subject=document.getElementById("subject").value;
+
+    // Validation
+    if(subject=="" || subject<=0){
+        document.getElementById("output").innerHTML="Please enter a valid number of subjects.";
+        return;
+    }
+
+    var total=0;
+    var result="PASS";
+
+    // Loop to enter marks
+    for(var i=1;i<=subject;i++){
+
+        var marks=prompt("Enter marks of Subject "+i);
+
+        if(marks==null || marks==""){
+            document.getElementById("output").innerHTML="Marks cannot be empty.";
+            return;
+        }
+
+        marks=Number(marks);
+
+        if(marks<0 || marks>100){
+            document.getElementById("output").innerHTML="Marks must be between 0 and 100.";
+            return;
+        }
+
+        total=total+marks;
+
+        if(marks<33){
+            result="FAIL";
+        }
+
+    }
+
+    // Calculate average
+    var average=total/subject;
+
+    // Grade Calculation
+    var grade;
+
+    if(average>=90){
+        grade="A+";
+    }
+    else if(average>=80){
+        grade="A";
+    }
+    else if(average>=70){
+        grade="B";
+    }
+    else if(average>=60){
+        grade="C";
+    }
+    else if(average>=50){
+        grade="D";
+    }
+    else{
+        grade="F";
+    }
+
+    // Display Result
+    document.getElementById("output").innerHTML=
+    "<h2>Result</h2>"+
+    "<hr><br>"+
+    "Total Marks : "+total+"<br>"+
+    "Average : "+average.toFixed(2)+"<br>"+
+    "Grade : "+grade+"<br>"+
+    "Final Result : "+result;
+
+}
+
+</script>
+
+</body>
+</html>
